@@ -12,7 +12,8 @@ void Server::cmdPING(Client& c, const std::vector<std::string>& a){
 void Server::cmdQUIT(Client& c, const std::vector<std::string>& a) {
     const std::string reason = a.empty() ? "Client Quit" : a.back();
     quitCleanup(c, reason);
-    c.closing = true;         
+    //sendTo(c, reason);
+    c.closing = true;        
 }
 
 void Server::handleCommand(Client& c, const Cmd& cmd){

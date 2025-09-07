@@ -25,7 +25,7 @@ void Server::cmdJOIN(Client& c, const std::vector<std::string>& a) {
 
     std::string joinMsg = ":" + (c.nick.empty()? "*": c.nick) + " JOIN " + chan + "\r\n";
     broadcastToChannel(ch, -1, joinMsg); // a todos
-    sendTo(c, joinMsg);                  // y al que entra (por si acaso)
+    //sendTo(c, joinMsg);                  // y al que entra (por si acaso)
 }
 
 void Server::cmdPART(Client& c, const std::vector<std::string>& a) {

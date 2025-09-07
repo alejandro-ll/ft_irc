@@ -51,6 +51,16 @@ void Server::run(){
             if (ev & POLLIN)  handleRead(i);
             if (i<pfds.size() && (pfds[i].revents & POLLOUT)) handleWrite(i);
         }
+        // Cerrar conexiones marcadas cuando ya se ha vaciado el sendBuf
+        for (size_t i=1; i<pfds.size(); /* ++i dentro */) {
+            int fd = pfds[i].fd;
+            std::map<int,Client>::iterator it = clients.find(fd);
+            if (it != clients.end()) {
+                Client &cl = it->second;
+                if (cl.closing && cl.sendBuf.empty()) { disconnect(i); continue; }
+            }
+            ++i;
+        }
     }
 }
 
@@ -106,7 +116,13 @@ void Server::handleWrite(size_t idx){
 }
 void Server::disconnect(size_t idx){
     int fd = pfds[idx].fd;
-    // TODO: sacar de canales si aplica
+    
+    // Si el cliente sigue en canales (p. ej. HUP), límpialos de forma segura
+    std::map<int,Client>::iterator it = clients.find(fd);
+    if (it != clients.end() && !it->second.channels.empty()) {
+        // No “razón” real aquí; es un cierre anómalo
+        quitCleanup(it->second, "Connection closed");
+    }
     ::close(fd);
     clients.erase(fd);
     pfds[idx] = pfds.back(); pfds.pop_back();
