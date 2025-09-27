@@ -1,4 +1,3 @@
-ft_irc — Mini servidor IRC educativo
 Este proyecto implementa un servidor IRC simple en C++ para entender cómo funcionan los conceptos básicos de sockets, multiplexación de clientes y parsing de comandos.  No incluye un cliente propio: se espera que los clientes sean externos, como nc, irssi o cualquier cliente IRC.
 Conceptos clave que se aprenden
 1️⃣ Servidor TCP y sockets
