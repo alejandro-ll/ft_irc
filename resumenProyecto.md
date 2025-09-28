@@ -29,7 +29,7 @@ El proyecto `alejandro-ll/ft_irc` es una implementación de un servidor IRC (Int
   - `PRIVMSG <usuario/canal>` → enviar mensaje
   - `NICK <nombre>` → cambiar nombre de usuario
 
-  0.3. **Canales**
+    0.3. **Canales**
 
 - Son como “salas de chat” donde los usuarios pueden interactuar
 - Los servidores mantienen listas de usuarios y permisos por canal
@@ -90,7 +90,7 @@ El proyecto `alejandro-ll/ft_irc` es una implementación de un servidor IRC (Int
 
 ---
 
-## 3. Funcionamiento profundo y cronológico
+## 3. Funcionamiento cronológico
 
 ### 1. Compilación y Preparación
 
