@@ -1,4 +1,4 @@
-# Proyecto irc
+# Proyecto ft_irc
 
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
 
