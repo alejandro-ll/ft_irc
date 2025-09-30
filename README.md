@@ -1,27 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Proyecto ft_irc
 
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
@@ -179,5 +155,125 @@ nc 127.0.0.1 6667
 - Construcción de **buffers FIFO** por cliente (`sendBuf` y `recvBuf`)
 - Implementación de un **mini parser IRC en tiempo real**
 - Gestión de **canales, broadcast y mensajes privados** sin un cliente propio
+
+---
+
+
+# handler
+
+## 🧠 ¿Qué es un handler de comando?
+
+Un *handler* es una función que se encarga de **procesar un comando específico** enviado por un cliente. En este caso, cada comando IRC (como `NICK`, `JOIN`, `PRIVMSG`, etc.) tiene su propio método en la clase `Server`.
+
+
+## 🧩 Lista de comandos y su propósito
+
+### 🔐 `cmdPASS`
+- **Propósito**: Verifica la contraseña del cliente.
+- **Uso típico**: `PASS <contraseña>`
+- **Lógica esperada**:
+  - Comparar con `Server::password`.
+  - Marcar al cliente como autenticado si es correcta.
+
+---
+
+### 🧑 `cmdNICK`
+- **Propósito**: Establece o cambia el apodo del cliente.
+- **Uso típico**: `NICK <nuevo_nick>`
+- **Lógica esperada**:
+  - Verificar que el nick no esté en uso.
+  - Asignarlo al cliente.
+  - Notificar a otros usuarios si ya está en un canal.
+
+---
+
+### 👤 `cmdUSER`
+- **Propósito**: Proporciona información del usuario (nombre real, etc.).
+- **Uso típico**: `USER <username> <hostname> <servername> <realname>`
+- **Lógica esperada**:
+  - Guardar los datos en el objeto `Client`.
+  - Intentar registrar al cliente si ya envió `PASS` y `NICK`.
+
+---
+
+### 🔁 `cmdPING`
+- **Propósito**: Verifica que el cliente siga conectado.
+- **Uso típico**: `PING <token>`
+- **Lógica esperada**:
+  - Responder con `PONG <token>`.
+
+---
+
+### ❌ `cmdQUIT`
+- **Propósito**: El cliente se desconecta voluntariamente.
+- **Uso típico**: `QUIT :<mensaje>`
+- **Lógica esperada**:
+  - Notificar a otros usuarios.
+  - Cerrar la conexión y limpiar recursos.
+
+---
+
+### 📥 `cmdJOIN`
+- **Propósito**: El cliente entra a un canal.
+- **Uso típico**: `JOIN #canal`
+- **Lógica esperada**:
+  - Crear el canal si no existe.
+  - Añadir al cliente a la lista de miembros.
+  - Enviar la lista de usuarios y el topic del canal.
+
+---
+
+### 📤 `cmdPART`
+- **Propósito**: El cliente sale de un canal.
+- **Uso típico**: `PART #canal`
+- **Lógica esperada**:
+  - Eliminar al cliente del canal.
+  - Notificar a los demás miembros.
+
+---
+
+### 💬 `cmdPRIVMSG`
+- **Propósito**: Enviar un mensaje privado a un usuario o canal.
+- **Uso típico**: `PRIVMSG <destino> :<mensaje>`
+- **Lógica esperada**:
+  - Si el destino es un canal, reenviar a todos los miembros.
+  - Si es un usuario, reenviar directamente.
+
+---
+
+### ⚙️ `cmdMODE`
+- **Propósito**: Cambiar modos de usuario o canal (como operador, privado, etc.).
+- **Uso típico**: `MODE #canal +o <nick>`
+- **Lógica esperada**:
+  - Validar permisos.
+  - Aplicar el cambio y notificar.
+
+---
+
+### 📝 `cmdTOPIC`
+- **Propósito**: Ver o cambiar el tema del canal.
+- **Uso típico**: `TOPIC #canal :<nuevo tema>`
+- **Lógica esperada**:
+  - Si no hay argumento, mostrar el tema actual.
+  - Si hay argumento, cambiarlo (si tiene permisos).
+
+---
+
+### 📩 `cmdINVITE`
+- **Propósito**: Invitar a un usuario a un canal.
+- **Uso típico**: `INVITE <nick> #canal`
+- **Lógica esperada**:
+  - Verificar que el canal existe y que el usuario tiene permisos.
+  - Enviar invitación al usuario.
+
+---
+
+### 🦵 `cmdKICK`
+- **Propósito**: Expulsar a un usuario de un canal.
+- **Uso típico**: `KICK #canal <nick> :<razón>`
+- **Lógica esperada**:
+  - Verificar que el emisor es operador.
+  - Eliminar al usuario del canal.
+  - Notificar a todos los miembros.
 
 ---
