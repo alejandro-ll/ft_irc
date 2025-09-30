@@ -161,4 +161,4 @@ nc 127.0.0.1 6667
 
 # Esquema de funcionamiento
 
-[esquema.jpg](test/esquema.jpg)
+[esquema.jpg](tests/esquema.jpg)
