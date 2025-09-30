@@ -1,3 +1,27 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Proyecto ft_irc
 
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
@@ -137,6 +161,17 @@ nc 127.0.0.1 6667
 
 ---
 
+## Requisitos obligatorios
+
+- No usar `fork()`, ni múltiples hilos.
+- Solo un `poll()` (o equivalente) para todas las operaciones.
+- Comunicación vía TCP/IP (IPv4 o IPv6).
+- Cliente de referencia debe conectarse sin errores.
+- Implementar comandos IRC mínimos:
+  - `PASS`, `NICK`, `USER`, `JOIN`, `PRIVMSG`
+  - Comandos de operador: `KICK`, `INVITE`, `TOPIC`, `MODE`
+
+---
 ## Conceptos que se aprenden
 
 - Multiplexación de clientes en **un solo hilo** usando `poll()`
