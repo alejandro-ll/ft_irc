@@ -158,3 +158,7 @@ nc 127.0.0.1 6667
 - Gestión de **canales, broadcast y mensajes privados** sin un cliente propio
 
 ---
+
+# Esquema de funcionamiento
+
+[esquema.jpg](test/esquema.jpg)
