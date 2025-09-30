@@ -137,7 +137,7 @@ nc 127.0.0.1 6667
 
 ---
 
-## Conceptos que se aprenden “en el chiste”
+## Conceptos que se aprenden
 
 - Multiplexación de clientes en **un solo hilo** usando `poll()`
 - Manejo de **sockets non-blocking** sin perder mensajes
