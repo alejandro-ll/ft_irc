@@ -373,4 +373,871 @@ El servidor `ft_irc` está diseñado con una arquitectura modular:
 
 ---
 
+Code
+P4CO
+​
+Romero, Francisco (Madrid)​
+CAUTION: This email originated outside the company. Do not click links or open attachments unless you are expecting them from the sender.
+Análisis Detallado del Flujo del Servidor IRC
 
+Voy a desglosar paso a paso todo el proceso que sigue el código del servidor IRC, explicando cada función y componente en detalle.
+
+📋 Estructura General del Proyecto
+
+El servidor IRC está organizado en una arquitectura modular con las siguientes clases principales:
+
+· Server: Clase principal que gestiona conexiones y coordina todo
+· Client: Representa cada cliente/conexión individual
+· Channel: Gestiona los canales y sus miembros
+· Parser: Interpreta y ejecuta los comandos IRC
+
+🔄 Flujo Principal del Servidor
+
+1. Inicialización del Servidor
+
+Archivo: main.cpp
+
+```cpp
+int main(int argc, char** argv) {
+    // Validación de parámetros
+    if (argc != 3) {
+        // Error handling
+    }
+    
+    // Creación del servidor
+    Server server(argv[1], argv[2]);
+    
+    // Inicialización y bucle principal
+    server.initialize();
+    server.run();
+    
+    return 0;
+}
+```
+
+Archivo: Server.cpp - Constructor
+
+```cpp
+Server::Server(const std::string& port, const std::string& password) 
+    : _port(port), _password(password), _parser(*this) {
+    // Inicialización de estructuras de datos
+}
+```
+
+Archivo: Server.cpp - Inicialización
+
+```cpp
+void Server::initialize() {
+    // Crear socket del servidor
+    _serverFd = socket(AF_INET, SOCK_STREAM, 0);
+    
+    // Configurar opciones del socket
+    int opt = 1;
+    setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    
+    // Enlazar socket a puerto
+    struct sockaddr_in address;
+    // ... configuración de address
+    bind(_serverFd, (struct sockaddr*)&address, sizeof(address));
+    
+    // Escuchar conexiones
+    listen(_serverFd, MAX_CLIENTS);
+    
+    // Agregar socket servidor a poll
+    struct pollfd serverPollFd;
+    serverPollFd.fd = _serverFd;
+    serverPollFd.events = POLLIN;
+    _pollFds.push_back(serverPollFd);
+}
+```
+
+2. Bucle Principal del Servidor
+
+Archivo: Server.cpp - run()
+
+```cpp
+void Server::run() {
+    while (true) {
+        // Esperar eventos con poll
+        int pollCount = poll(_pollFds.data(), _pollFds.size(), -1);
+        
+        if (pollCount < 0) {
+            // Manejar error
+            continue;
+        }
+        
+        // Verificar cada descriptor
+        for (size_t i = 0; i < _pollFds.size(); ++i) {
+            if (_pollFds[i].revents & POLLIN) {
+                if (_pollFds[i].fd == _serverFd) {
+                    // Nueva conexión entrante
+                    acceptNewClient();
+                } else {
+                    // Datos de cliente existente
+                    handleClientMessage(_pollFds[i].fd);
+                }
+            }
+            
+            if (_pollFds[i].revents & (POLLHUP | POLLERR)) {
+                // Cliente desconectado o error
+                disconnectClient(_pollFds[i].fd);
+            }
+        }
+    }
+}
+```
+
+🔍 Análisis Detallado de Cada Componente
+
+3. Manejo de Nuevas Conexiones
+
+Archivo: Server.cpp - acceptNewClient()
+
+```cpp
+void Server::acceptNewClient() {
+    struct sockaddr_in clientAddress;
+    socklen_t clientLen = sizeof(clientAddress);
+    
+    // Aceptar nueva conexión
+    int clientFd = accept(_serverFd, (struct sockaddr*)&clientAddress, &clientLen);
+    
+    if (clientFd < 0) {
+        // Error al aceptar conexión
+        return;
+    }
+    
+    // Configurar socket como no bloqueante
+    fcntl(clientFd, F_SETFL, O_NONBLOCK);
+    
+    // Crear nuevo cliente
+    _clients[clientFd] = Client(clientFd);
+    
+    // Agregar a poll
+    struct pollfd newPollFd;
+    newPollFd.fd = clientFd;
+    newPollFd.events = POLLIN;
+    _pollFds.push_back(newPollFd);
+    
+    // Mensaje de depuración
+    std::cout << "Nuevo cliente conectado: " << clientFd << std::endl;
+}
+```
+
+4. Procesamiento de Mensajes de Clientes
+
+Archivo: Server.cpp - handleClientMessage()
+
+```cpp
+void Server::handleClientMessage(int clientFd) {
+    Client& client = _clients[clientFd];
+    char buffer[BUFFER_SIZE];
+    
+    // Leer datos del socket
+    ssize_t bytesRead = recv(clientFd, buffer, BUFFER_SIZE - 1, 0);
+    
+    if (bytesRead <= 0) {
+        // Cliente desconectado o error
+        disconnectClient(clientFd);
+        return;
+    }
+    
+    // Null-terminar el buffer
+    buffer[bytesRead] = '\0';
+    
+    // Acumular datos en el buffer del cliente
+    client.appendToBuffer(buffer, bytesRead);
+    
+    // Extraer líneas completas
+    std::vector<std::string> lines = client.extractLines();
+    
+    // Procesar cada línea
+    for (size_t i = 0; i < lines.size(); ++i) {
+        std::cout << "Procesando comando: " << lines[i] << std::endl;
+        _parser.parse(client, lines[i]);
+    }
+}
+```
+
+🧩 Sistema de Parser y Comandos
+
+5. Estructura del Parser
+
+Archivo: Parser.hpp
+
+```cpp
+class Parser {
+private:
+    Server& _server;
+    std::map<std::string, handler> _handlers;
+    
+    // Handlers de comandos
+    void handlePass(Client& client, const std::vector<std::string>& args);
+    void handleNick(Client& client, const std::vector<std::string>& args);
+    void handleUser(Client& client, const std::vector<std::string>& args);
+    void handleJoin(Client& client, const std::vector<std::string>& args);
+    void handlePrivmsg(Client& client, const std::vector<std::string>& args);
+    void handleQuit(Client& client, const std::vector<std::string>& args);
+    // ... más handlers
+    
+public:
+    Parser(Server& server);
+    void parse(Client& client, const std::string& line);
+};
+```
+
+Archivo: Parser.cpp - Constructor
+
+```cpp
+Parser::Parser(Server& server) : _server(server) {
+    // Registrar todos los handlers
+    _handlers["PASS"] = &Parser::handlePass;
+    _handlers["NICK"] = &Parser::handleNick;
+    _handlers["USER"] = &Parser::handleUser;
+    _handlers["JOIN"] = &Parser::handleJoin;
+    _handlers["PRIVMSG"] = &Parser::handlePrivmsg;
+    _handlers["QUIT"] = &Parser::handleQuit;
+    // ... más registros
+}
+```
+
+6. Procesamiento de Comandos
+
+Archivo: Parser.cpp - parse()
+
+```cpp
+void Parser::parse(Client& client, const std::string& line) {
+    // Dividir línea en tokens
+    std::vector<std::string> tokens = split(line, ' ');
+    
+    if (tokens.empty()) return;
+    
+    // Convertir comando a mayúsculas
+    std::string command = toUpper(tokens[0]);
+    
+    // Buscar handler
+    std::map<std::string, handler>::iterator it = _handlers.find(command);
+    if (it != _handlers.end()) {
+        // Llamar al handler correspondiente
+        (this->*(it->second))(client, tokens);
+    } else {
+        // Comando no reconocido
+        client.sendMessage(ERR_UNKNOWNCOMMAND(client, command));
+    }
+}
+```
+
+🔐 Sistema de Autenticación
+
+7. Comandos de Autenticación
+
+Archivo: Auth.cpp - handlePass()
+
+```cpp
+void Parser::handlePass(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "PASS"));
+        return;
+    }
+    
+    if (client.isRegistered()) {
+        client.sendMessage(ERR_ALREADYREGISTERED(client));
+        return;
+    }
+    
+    // Verificar contraseña
+    if (args[1] != _server.getPassword()) {
+        client.sendMessage(ERR_PASSWDMISMATCH(client));
+        disconnectClient(client.getFd());
+        return;
+    }
+    
+    client.setPassword(args[1]);
+    client.setAuthFlag(Client::PASS_AUTH);
+}
+```
+
+Archivo: Auth.cpp - handleNick()
+
+```cpp
+void Parser::handleNick(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        client.sendMessage(ERR_NONICKNAMEGIVEN(client));
+        return;
+    }
+    
+    std::string nick = args[1];
+    
+    // Validar formato del nick
+    if (!isValidNick(nick)) {
+        client.sendMessage(ERR_ERRONEUSNICKNAME(client, nick));
+        return;
+    }
+    
+    // Verificar si el nick está en uso
+    if (_server.isNickInUse(nick)) {
+        client.sendMessage(ERR_NICKNAMEINUSE(client, nick));
+        return;
+    }
+    
+    // Actualizar nick
+    std::string oldNick = client.getNick();
+    client.setNick(nick);
+    client.setAuthFlag(Client::NICK_AUTH);
+    
+    // Notificar cambio si ya estaba registrado
+    if (client.isRegistered() && !oldNick.empty()) {
+        // Enviar mensajes NICK a los canales
+    }
+    
+    // Completar registro si está listo
+    tryCompleteRegistration(client);
+}
+```
+
+Archivo: Auth.cpp - handleUser()
+
+```cpp
+void Parser::handleUser(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 5) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "USER"));
+        return;
+    }
+    
+    if (client.isRegistered()) {
+        client.sendMessage(ERR_ALREADYREGISTERED(client));
+        return;
+    }
+    
+    // Establecer información de usuario
+    client.setUsername(args[1]);
+    client.setRealname(args[4]);
+    client.setAuthFlag(Client::USER_AUTH);
+    
+    // Completar registro si está listo
+    tryCompleteRegistration(client);
+}
+```
+
+Archivo: Auth.cpp - tryCompleteRegistration()
+
+```cpp
+void Parser::tryCompleteRegistration(Client& client) {
+    if (client.hasAuthFlag(Client::PASS_AUTH) &&
+        client.hasAuthFlag(Client::NICK_AUTH) &&
+        client.hasAuthFlag(Client::USER_AUTH) &&
+        !client.isRegistered()) {
+        
+        client.setRegistered(true);
+        
+        // Enviar mensajes de bienvenida
+        client.sendMessage(RPL_WELCOME(client));
+        client.sendMessage(RPL_YOURHOST(client));
+        client.sendMessage(RPL_CREATED(client));
+        client.sendMessage(RPL_MYINFO(client));
+    }
+}
+```
+
+🏷️ Gestión de Canales
+
+8. Comando JOIN
+
+Archivo: ChannelJoin.cpp
+
+```cpp
+void Parser::handleJoin(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "JOIN"));
+        return;
+    }
+    
+    if (!client.isRegistered()) {
+        client.sendMessage(ERR_NOTREGISTERED(client));
+        return;
+    }
+    
+    std::string channelName = args[1];
+    
+    // Validar nombre del canal
+    if (!isValidChannelName(channelName)) {
+        client.sendMessage(ERR_NOSUCHCHANNEL(client, channelName));
+        return;
+    }
+    
+    // Obtener o crear canal
+    Channel* channel = _server.getChannel(channelName);
+    if (!channel) {
+        // Crear nuevo canal
+        channel = _server.createChannel(channelName, client);
+        channel->addOperator(&client); // Primer usuario es operador
+    } else {
+        // Unirse a canal existente
+        if (channel->isInviteOnly() && !channel->isInvited(client)) {
+            client.sendMessage(ERR_INVITEONLYCHAN(client, channelName));
+            return;
+        }
+        
+        if (channel->isFull()) {
+            client.sendMessage(ERR_CHANNELISFULL(client, channelName));
+            return;
+        }
+        
+        if (channel->hasKey() && (args.size() < 3 || args[2] != channel->getKey())) {
+            client.sendMessage(ERR_BADCHANNELKEY(client, channelName));
+            return;
+        }
+        
+        channel->addClient(client);
+    }
+    
+    // Actualizar lista de canales del cliente
+    client.addChannel(channelName);
+    
+    // Enviar confirmación JOIN
+    channel->broadcast(RPL_JOIN(client.getPrefix(), channelName));
+    
+    // Enviar lista de nombres
+    std::string namesList = channel->getNamesList();
+    client.sendMessage(RPL_NAMREPLY(client, channelName, namesList));
+    client.sendMessage(RPL_ENDOFNAMES(client, channelName));
+    
+    // Enviar topic si existe
+    if (!channel->getTopic().empty()) {
+        client.sendMessage(RPL_TOPIC(client, channelName, channel->getTopic()));
+    }
+}
+```
+
+9. Comando PRIVMSG
+
+Archivo: Message.cpp
+
+```cpp
+void Parser::handlePrivmsg(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 3) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "PRIVMSG"));
+        return;
+    }
+    
+    if (!client.isRegistered()) {
+        client.sendMessage(ERR_NOTREGISTERED(client));
+        return;
+    }
+    
+    std::string target = args[1];
+    std::string message = args[2];
+    
+    if (target[0] == '#' || target[0] == '&') {
+        // Mensaje a canal
+        Channel* channel = _server.getChannel(target);
+        if (!channel) {
+            client.sendMessage(ERR_NOSUCHCHANNEL(client, target));
+            return;
+        }
+        
+        if (!channel->hasClient(client)) {
+            client.sendMessage(ERR_CANNOTSENDTOCHAN(client, target));
+            return;
+        }
+        
+        // Difundir mensaje a todos los miembros del canal
+        channel->broadcast(FMT_PRIVMSG(client.getPrefix(), target, message), &client);
+        
+    } else {
+        // Mensaje privado a usuario
+        Client* targetClient = _server.getClientByNick(target);
+        if (!targetClient) {
+            client.sendMessage(ERR_NOSUCHNICK(client, target));
+            return;
+        }
+        
+        // Enviar mensaje directamente al cliente
+        targetClient->sendMessage(FMT_PRIVMSG(client.getPrefix(), target, message));
+    }
+}
+```
+
+🏗️ Estructuras de Datos Principales
+
+10. Clase Client
+
+Archivo: Client.hpp
+
+```cpp
+class Client {
+private:
+    int _fd;
+    std::string _nick;
+    std::string _username;
+    std::string _realname;
+    std::string _hostname;
+    std::string _password;
+    std::string _buffer;
+    std::set<std::string> _channels;
+    bool _registered;
+    int _authFlags;
+    
+public:
+    // Constructor/destructor
+    Client(int fd);
+    ~Client();
+    
+    // Getters/Setters
+    int getFd() const;
+    std::string getNick() const;
+    std::string getUsername() const;
+    std::string getRealname() const;
+    std::string getPrefix() const;
+    
+    // Gestión de estado
+    bool isRegistered() const;
+    void setRegistered(bool registered);
+    
+    // Gestión de autenticación
+    bool hasAuthFlag(int flag) const;
+    void setAuthFlag(int flag);
+    
+    // Gestión de buffer
+    void appendToBuffer(const char* data, size_t len);
+    std::vector<std::string> extractLines();
+    
+    // Gestión de canales
+    void addChannel(const std::string& channelName);
+    void removeChannel(const std::string& channelName);
+    const std::set<std::string>& getChannels() const;
+    
+    // Envío de mensajes
+    void sendMessage(const std::string& message);
+};
+```
+
+Archivo: Client.cpp - Gestión de Buffer
+
+```cpp
+void Client::appendToBuffer(const char* data, size_t len) {
+    _buffer.append(data, len);
+}
+
+std::vector<std::string> Client::extractLines() {
+    std::vector<std::string> lines;
+    size_t pos = 0;
+    
+    while ((pos = _buffer.find("\r\n")) != std::string::npos) {
+        std::string line = _buffer.substr(0, pos);
+        lines.push_back(line);
+        _buffer.erase(0, pos + 2); // Eliminar línea + \r\n
+    }
+    
+    return lines;
+}
+```
+
+11. Clase Channel
+
+Archivo: Channel.hpp
+
+```cpp
+class Channel {
+private:
+    std::string _name;
+    std::string _topic;
+    std::string _key;
+    std::set<Client*> _clients;
+    std::set<Client*> _operators;
+    std::set<Client*> _invited;
+    int _userLimit;
+    bool _inviteOnly;
+    bool _topicRestricted;
+    
+public:
+    Channel(const std::string& name);
+    
+    // Gestión de miembros
+    void addClient(Client& client);
+    void removeClient(Client& client);
+    bool hasClient(const Client& client) const;
+    
+    // Gestión de operadores
+    void addOperator(Client* client);
+    void removeOperator(Client* client);
+    bool isOperator(const Client& client) const;
+    
+    // Difusión de mensajes
+    void broadcast(const std::string& message, const Client* except = NULL);
+    
+    // Getters
+    std::string getName() const;
+    std::string getTopic() const;
+    std::string getNamesList() const;
+    bool isFull() const;
+    bool isInviteOnly() const;
+    bool hasKey() const;
+    
+    // Setters
+    void setTopic(const std::string& topic);
+    void setKey(const std::string& key);
+    void setUserLimit(int limit);
+    void setInviteOnly(bool inviteOnly);
+};
+```
+
+Archivo: Channel.cpp - Broadcast
+
+```cpp
+void Channel::broadcast(const std::string& message, const Client* except) {
+    for (std::set<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (*it != except) {
+            (*it)->sendMessage(message);
+        }
+    }
+}
+```
+
+🔧 Comandos Adicionales
+
+12. Comandos de Moderación
+
+Archivo: InviteKick.cpp - handleKick()
+
+```cpp
+void Parser::handleKick(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 3) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "KICK"));
+        return;
+    }
+    
+    std::string channelName = args[1];
+    std::string targetNick = args[2];
+    std::string reason = args.size() > 3 ? args[3] : "";
+    
+    Channel* channel = _server.getChannel(channelName);
+    if (!channel) {
+        client.sendMessage(ERR_NOSUCHCHANNEL(client, channelName));
+        return;
+    }
+    
+    if (!channel->hasClient(client)) {
+        client.sendMessage(ERR_NOTONCHANNEL(client, channelName));
+        return;
+    }
+    
+    if (!channel->isOperator(client)) {
+        client.sendMessage(ERR_CHANOPRIVSNEEDED(client, channelName));
+        return;
+    }
+    
+    Client* target = _server.getClientByNick(targetNick);
+    if (!target || !channel->hasClient(*target)) {
+        client.sendMessage(ERR_USERNOTINCHANNEL(client, targetNick, channelName));
+        return;
+    }
+    
+    // Expulsar al usuario
+    channel->removeClient(*target);
+    target->removeChannel(channelName);
+    
+    // Notificar al canal
+    channel->broadcast(FMT_KICK(client.getPrefix(), channelName, targetNick, reason));
+}
+```
+
+Archivo: Mode.cpp - handleMode()
+
+```cpp
+void Parser::handleMode(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "MODE"));
+        return;
+    }
+    
+    std::string target = args[1];
+    
+    if (target[0] == '#' || target[0] == '&') {
+        // Modos de canal
+        handleChannelMode(client, args);
+    } else {
+        // Modos de usuario (no implementados típicamente)
+        client.sendMessage(ERR_USERSDONTMATCH(client));
+    }
+}
+```
+
+Archivo: Topic.cpp - handleTopic()
+
+```cpp
+void Parser::handleTopic(Client& client, const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        client.sendMessage(ERR_NEEDMOREPARAMS(client, "TOPIC"));
+        return;
+    }
+    
+    std::string channelName = args[1];
+    Channel* channel = _server.getChannel(channelName);
+    
+    if (!channel) {
+        client.sendMessage(ERR_NOSUCHCHANNEL(client, channelName));
+        return;
+    }
+    
+    if (!channel->hasClient(client)) {
+        client.sendMessage(ERR_NOTONCHANNEL(client, channelName));
+        return;
+    }
+    
+    if (args.size() == 2) {
+        // Mostrar topic actual
+        std::string topic = channel->getTopic();
+        if (topic.empty()) {
+            client.sendMessage(RPL_NOTOPIC(client, channelName));
+        } else {
+            client.sendMessage(RPL_TOPIC(client, channelName, topic));
+        }
+    } else {
+        // Cambiar topic
+        if (channel->isTopicRestricted() && !channel->isOperator(client)) {
+            client.sendMessage(ERR_CHANOPRIVSNEEDED(client, channelName));
+            return;
+        }
+        
+        std::string newTopic = args[2];
+        channel->setTopic(newTopic);
+        channel->broadcast(FMT_TOPIC(client.getPrefix(), channelName, newTopic));
+    }
+}
+```
+
+🧹 Gestión de Desconexiones
+
+13. Limpieza de Clientes
+
+Archivo: Server.cpp - disconnectClient()
+
+```cpp
+void Server::disconnectClient(int clientFd) {
+    Client& client = _clients[clientFd];
+    
+    // Notificar a todos los canales
+    std::string quitMsg = FMT_QUIT(client.getPrefix(), "Client quit");
+    const std::set<std::string>& channels = client.getChannels();
+    
+    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+        Channel* channel = getChannel(*it);
+        if (channel) {
+            channel->broadcast(quitMsg, &client);
+            channel->removeClient(client);
+            
+            // Eliminar canal si está vacío
+            if (channel->getClientCount() == 0) {
+                removeChannel(*it);
+            }
+        }
+    }
+    
+    // Eliminar de estructuras de datos
+    _clients.erase(clientFd);
+    
+    // Eliminar de poll
+    for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ++it) {
+        if (it->fd == clientFd) {
+            _pollFds.erase(it);
+            break;
+        }
+    }
+    
+    // Cerrar socket
+    close(clientFd);
+    
+    std::cout << "Cliente desconectado: " << clientFd << std::endl;
+}
+```
+
+📨 Formateo de Mensajes IRC
+
+14. Utilidades de Formato
+
+Archivo: Misc.cpp
+
+```cpp
+std::string FMT_PRIVMSG(const std::string& prefix, const std::string& target, const std::string& message) {
+    return ":" + prefix + " PRIVMSG " + target + " :" + message + "\r\n";
+}
+
+std::string FMT_JOIN(const std::string& prefix, const std::string& channel) {
+    return ":" + prefix + " JOIN " + channel + "\r\n";
+}
+
+std::string FMT_KICK(const std::string& prefix, const std::string& channel, 
+                    const std::string& target, const std::string& reason) {
+    return ":" + prefix + " KICK " + channel + " " + target + " :" + reason + "\r\n";
+}
+
+std::string FMT_TOPIC(const std::string& prefix, const std::string& channel, const std::string& topic) {
+    return ":" + prefix + " TOPIC " + channel + " :" + topic + "\r\n";
+}
+
+std::string FMT_QUIT(const std::string& prefix, const std::string& reason) {
+    return ":" + prefix + " QUIT :" + reason + "\r\n";
+}
+
+// Respuestas numéricas
+std::string RPL_WELCOME(const Client& client) {
+    return ":localhost 001 " + client.getNick() + " :Welcome to the IRC Network " + 
+           client.getNick() + "!" + client.getUsername() + "@localhost\r\n";
+}
+
+std::string ERR_NEEDMOREPARAMS(const Client& client, const std::string& command) {
+    return ":localhost 461 " + client.getNick() + " " + command + " :Not enough parameters\r\n";
+}
+```
+
+🔄 Flujo Completo del Escenario
+
+Ahora aplicaremos este flujo detallado al escenario específico que mencionaste:
+
+Terminal 1 (Cliente A - Alice):
+
+1. nc 127.0.0.1 6667
+   · Server::acceptNewClient() crea nuevo Client con fd X
+   · Cliente añadido a _clients y _pollFds
+2. PASS 1234
+   · Parser::handlePass() verifica contraseña
+   · Establece flag PASS_AUTH
+3. NICK Alice
+   · Parser::handleNick() valida y establece nick
+   · Establece flag NICK_AUTH
+4. USER alice 0 * :Alice
+   · Parser::handleUser() establece username y realname
+   · Establece flag USER_AUTH
+   · tryCompleteRegistration() marca cliente como registrado
+   · Envía mensajes de bienvenida
+5. JOIN #astro
+   · Parser::handleJoin() crea canal #astro
+   · Alice se convierte en operadora
+   · Se envía mensaje JOIN al canal
+6. PRIVMSG #astro :Hola desde Alice
+   · Parser::handlePrivmsg() difunde mensaje al canal
+   · Channel::broadcast() envía a todos los miembros
+
+Terminal 2 (Cliente B - Bob):
+
+1. nc 127.0.0.1 6667
+   · Mismo proceso de conexión que Alice
+2. PASS 1234, NICK Bob, USER bob 0 * :Bob
+   · Proceso de autenticación idéntico
+3. JOIN #astro
+   · Parser::handleJoin() añade Bob al canal existente
+   · Channel::broadcast() envía mensaje JOIN a todos (Alice lo recibe)
+   · Bob recibe lista de nombres y topic
+
+🎯 Conclusión Técnica
+
+Este servidor IRC sigue una arquitectura bien definida:
+
+1. Gestión de E/S asíncrona con poll() para múltiples clientes
+2. Bufferización inteligente para manejar mensajes fragmentados
+3. Sistema de autenticación por fases (PASS → NICK → USER)
+4. Gestión centralizada de estado mediante clases Client y Channel
+5. Parser modular con sistema de handlers por comando
+6. Formato IRC estándar en todas las comunicaciones
+
+Cada componente tiene responsabilidades claras y el flujo de datos está bien estructurado, haciendo el código mantenible y extensible para nuevos comandos IRC.
