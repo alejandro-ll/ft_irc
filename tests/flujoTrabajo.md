@@ -1,6 +1,4 @@
-Claro, Francisco. Aquí tienes la **respuesta completa** que te di originalmente tras recibir los enlaces del repositorio `ft_irc`, sin resumen ni omisiones:
 
-***
 
 ## 🎯 Objetivo
 
