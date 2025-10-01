@@ -213,7 +213,6 @@ class Channel {
 
 ***
 
-¿Quieres que esta respuesta también la convierta en `.md` o `.pdf`? Puedo hacerlo ahora mismo.
 
 
 ## 🧩 Construcción de mensajes IRC
@@ -373,14 +372,9 @@ El servidor `ft_irc` está diseñado con una arquitectura modular:
 
 ---
 
-Code
-P4CO
-​
-Romero, Francisco (Madrid)​
-CAUTION: This email originated outside the company. Do not click links or open attachments unless you are expecting them from the sender.
-Análisis Detallado del Flujo del Servidor IRC
+---
 
-Voy a desglosar paso a paso todo el proceso que sigue el código del servidor IRC, explicando cada función y componente en detalle.
+---
 
 📋 Estructura General del Proyecto
 
