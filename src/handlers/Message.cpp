@@ -1,12 +1,11 @@
-```cpp
 #include "Server.hpp"
 
-    /**
-     * @brief Handles PRIVMSG command for sending messages to channels or users
-     * @param c Client sending the command
-     * @param a Command arguments [target, message]
-     */
-    void Server::cmdPRIVMSG(Client &c, const std::vector<std::string> &a)
+/**
+ * @brief Handles PRIVMSG command for sending messages to channels or users
+ * @param c Client sending the command
+ * @param a Command arguments [target, message]
+ */
+void Server::cmdPRIVMSG(Client &c, const std::vector<std::string> &a)
 {
     if (a.size() < 2)
         return sendTo(c, ":server NOTICE " + c.nick + " :PRIVMSG needs <target> :<text>\r\n");
@@ -45,4 +44,3 @@
         return;
     }
 }
-```
