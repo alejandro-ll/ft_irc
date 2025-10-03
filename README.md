@@ -1,5 +1,256 @@
-# Proyecto ft_irc
+# DeepWiki ft_irc (Español)
 
+## Índice
+1. [Visión General del Proyecto](#visión-general-del-proyecto)
+2. [Clase Server](#clase-server)
+3. [Clase Client](#clase-client)
+4. [Clase Channel](#clase-channel)
+5. [Parser IRC](#parser-irc)
+6. [Arquitectura y Flujo de Datos](#arquitectura-y-flujo-de-datos)
+7. [Comandos Implementados](#comandos-implementados)
+8. [Uso y Ejecución](#uso-y-ejecución)
+
+---
+
+## Visión General del Proyecto
+
+Este proyecto implementa un **servidor IRC completo en C++** que permite la comunicación entre múltiples clientes usando el protocolo IRC estándar. [1](#0-0) 
+
+### Conceptos Técnicos Principales
+
+El proyecto enseña conceptos fundamentales de programación de redes:
+- **Sockets TCP no bloqueantes**
+- **Multiplexación de clientes con poll()**
+- **Buffers FIFO para envío/recepción**
+- **Parsing en tiempo real de comandos IRC**
+- **Gestión de canales y broadcast de mensajes** [2](#0-1) 
+
+---
+
+## Clase Server
+
+### Definición y Propósito
+
+La clase `Server` es el núcleo del sistema, responsable de gestionar todas las conexiones de clientes y procesar comandos IRC. [3](#0-2) 
+
+### Atributos Principales
+
+```cpp
+private:
+    int listen_fd;                              // Socket de escucha principal
+    std::string password;                       // Contraseña del servidor
+    std::vector<struct pollfd> pfds;           // Array para poll()
+    std::map<int, Client> clients;             // Clientes indexados por FD
+    std::map<std::string, Channel> channels;   // Canales del servidor
+``` [4](#0-3) 
+
+### Métodos de Gestión de Red
+
+La clase implementa métodos fundamentales para la gestión de sockets:
+
+- **Constructor**: Inicializa el puerto y contraseña [5](#0-4) 
+- **`run()`**: Bucle principal del servidor [6](#0-5) 
+- **`initListen()`**: Configura el socket de escucha [7](#0-6) 
+- **`setNonBlocking()`**: Configura sockets no bloqueantes [8](#0-7) 
+
+### Gestión de Clientes
+
+El servidor maneja eventos de clientes mediante:
+
+- **`acceptNew()`**: Acepta nuevas conexiones [9](#0-8) 
+- **`handleRead()`**: Procesa datos entrantes [10](#0-9) 
+- **`handleWrite()`**: Envía datos pendientes [11](#0-10) 
+- **`disconnect()`**: Desconecta clientes [12](#0-11) 
+
+### Procesamiento de Comandos
+
+Todos los comandos IRC son manejados por métodos específicos: [13](#0-12) 
+
+### Implementación del Bucle Principal
+
+El método `run()` implementa el patrón de multiplexación con `poll()`:
+
+1. **Configuración de eventos**: Cada cliente se marca para lectura, y opcionalmente para escritura si tiene datos pendientes
+2. **Llamada a poll()**: Espera eventos en todos los file descriptors
+3. **Procesamiento de eventos**: Maneja nuevas conexiones y eventos de clientes existentes [14](#0-13) 
+
+---
+
+## Clase Client
+
+### Estructura y Propósito
+
+La estructura `Client` representa cada usuario conectado al servidor, manteniendo su estado de conexión y buffers de comunicación. [15](#0-14) 
+
+### Atributos del Cliente
+
+Cada cliente mantiene:
+
+- **`fd`**: File descriptor de la conexión
+- **`recvBuf`, `sendBuf`**: Buffers de recepción y envío
+- **`nick`, `user`, `realname`**: Información de identificación
+- **`passOk`, `registered`**: Estados de autenticación
+- **`closing`**: Bandera de desconexión
+- **`channels`**: Conjunto de canales donde está el cliente [16](#0-15) 
+
+### Constructores
+
+La clase proporciona dos constructores:
+- Constructor por defecto que inicializa valores predeterminados
+- Constructor explícito que toma un file descriptor [17](#0-16) 
+
+---
+
+## Clase Channel
+
+### Definición y Funcionalidad
+
+La estructura `Channel` representa un canal IRC con todos sus modos, miembros y configuraciones. [18](#0-17) 
+
+### Atributos del Canal
+
+Cada canal mantiene:
+
+- **Información básica**: `name`, `topic`, `key`
+- **Modos del canal**: `inviteOnly` (+i), `topicOpOnly` (+t), `limit` (+l)
+- **Listas de usuarios**: `members`, `ops`, `invited` [19](#0-18) 
+
+### Métodos de Consulta
+
+La clase proporciona métodos para verificar el estado de los usuarios: [20](#0-19) 
+
+### Gestión de Modos
+
+Métodos para configurar los diferentes modos del canal: [21](#0-20) 
+
+### Gestión de Miembros
+
+Operaciones para administrar la membresía del canal: [22](#0-21) 
+
+### Validación de Acceso
+
+El método `canJoin()` implementa la lógica completa para determinar si un usuario puede unirse al canal, verificando:
+
+- **Límite de usuarios** (+l)
+- **Clave del canal** (+k) 
+- **Solo por invitación** (+i) [23](#0-22) 
+
+---
+
+## Parser IRC
+
+### Estructura de Comandos
+
+El parser define una estructura simple para representar comandos IRC: [24](#0-23) 
+
+### Función de Parsing
+
+La función `parseIrcLine()` implementa el parsing completo de líneas IRC:
+
+1. **Separación de trailing**: Maneja parámetros que comienzan con ":"
+2. **Extracción del verbo**: Primer token de la línea
+3. **Procesamiento de argumentos**: Tokens adicionales
+4. **Normalización**: Convierte el verbo a mayúsculas [25](#0-24) 
+
+---
+
+## Arquitectura y Flujo de Datos
+
+### Patrón de Multiplexación
+
+El servidor utiliza `poll()` para manejar múltiples clientes simultáneamente en un solo hilo: [26](#0-25) 
+
+### Flujo de Recepción (POLLIN)
+
+Cuando un cliente envía datos:
+
+1. **Detección**: `poll()` marca `POLLIN` en el file descriptor
+2. **Lectura**: `handleRead()` acumula datos en `recvBuf`
+3. **Procesamiento**: Detecta líneas completas terminadas en `\r\n`
+4. **Ejecución**: Llama a `onLine()` → `handleCommand()` [27](#0-26) 
+
+### Flujo de Envío (POLLOUT)
+
+Para enviar datos a clientes:
+
+1. **Encolado**: `sendTo()` agrega mensajes a `sendBuf`
+2. **Marcado**: Se activa `POLLOUT` para el file descriptor
+3. **Envío**: `handleWrite()` envía datos cuando sea posible
+4. **Gestión**: Mantiene datos no enviados para próximas iteraciones [28](#0-27) 
+
+### Broadcast en Canales
+
+El sistema de broadcast permite enviar mensajes a múltiples usuarios:
+
+- **`broadcastToChannel()`**: Envía a todos los miembros excepto al emisor
+- **Gestión automática**: El servidor determina a qué file descriptors enviar [29](#0-28) 
+
+---
+
+## Comandos Implementados
+
+### Comandos de Autenticación
+
+El servidor implementa la secuencia estándar de autenticación IRC:
+
+- **`PASS`**: Verificación de contraseña [30](#0-29) 
+- **`NICK`**: Establecimiento de nickname [31](#0-30) 
+- **`USER`**: Información del usuario [32](#0-31) 
+
+### Comandos de Canal
+
+Gestión completa de canales IRC:
+
+- **`JOIN`**: Unirse a canales [33](#0-32) 
+- **`PART`**: Salir de canales [34](#0-33) 
+- **`TOPIC`**: Gestión de temas [35](#0-34) 
+
+### Comandos de Operador
+
+Funcionalidades administrativas:
+
+- **`MODE`**: Gestión de modos [36](#0-35) 
+- **`KICK`**: Expulsar usuarios [37](#0-36) 
+- **`INVITE`**: Invitar usuarios [38](#0-37) 
+
+### Comandos de Comunicación
+
+- **`PRIVMSG`**: Mensajes privados y de canal [39](#0-38) 
+- **`PING`**: Verificación de conectividad [40](#0-39) 
+- **`QUIT`**: Desconexión del servidor [41](#0-40) 
+
+---
+
+## Uso y Ejecución
+
+### Compilación y Ejecución
+
+El servidor se ejecuta desde línea de comandos: [42](#0-41) 
+
+### Ejemplo de Uso
+
+Para iniciar el servidor: [43](#0-42) 
+
+### Punto de Entrada
+
+El programa principal valida argumentos e inicializa el servidor: [44](#0-43) 
+
+### Conexión de Clientes
+
+Los clientes se conectan usando herramientas estándar: [45](#0-44) 
+
+---
+
+## Notas
+
+Este proyecto implementa un servidor IRC completo siguiendo las especificaciones del protocolo RFC, con un diseño orientado a la eficiencia y simplicidad. La arquitectura basada en `poll()` permite manejar múltiples clientes simultáneamente sin la complejidad de múltiples hilos, mientras que el sistema de buffers asegura que no se pierdan mensajes incluso con sockets no bloqueantes.
+
+La implementación demuestra conceptos avanzados de programación de redes, incluyendo multiplexación de E/O, gestión de estados de conexión, y parsing de protocolos en tiempo real, todo ello manteniendo un código limpio y bien estructurado.
+
+### Citations
+
+**File:** README.md (L4-10)
+```markdown
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
 
 - Sockets TCP
@@ -7,22 +258,10 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 - Parsing de comandos IRC
 
 **Nota:** No incluye un cliente propio. Se espera que los clientes sean externos, como `nc`, `irssi` o cualquier otro cliente IRC.
+```
 
----
-
-## Conceptos clave que se aprenden
-
-### 1️⃣ Servidor TCP y sockets
-
-- El servidor crea un **socket de escucha (`listen_fd`)** en un puerto dado (ej.: 6667).
-- Funciones principales:
-
-  - `bind()` → ata el socket a todas las interfaces (`0.0.0.0`)
-  - `listen()` → pone el socket en modo escucha
-  - `setNonBlocking()` → evita que bloquee el hilo principal
-
----
-
+**File:** README.md (L27-36)
+```markdown
 ### 2️⃣ Multiplexación de clientes con `poll()`
 
 - Cada cliente se representa con un **FD** y un objeto `Client`.
@@ -33,8 +272,10 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 
 - `poll()` permite **gestionar múltiples clientes simultáneamente** sin necesidad de hilos extra.
 
----
+```
 
+**File:** README.md (L39-49)
+```markdown
 ### 3️⃣ Recepción de mensajes (`POLLIN`)
 
 - Cuando un cliente envía datos, el FD marca `POLLIN`.
@@ -46,8 +287,10 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 
 - Cada línea se procesa **en tiempo real**, interpretando comandos IRC como `PRIVMSG`, `JOIN`, etc.
 
----
+```
 
+**File:** README.md (L52-67)
+```markdown
 ### 4️⃣ Envío de mensajes (`POLLOUT`)
 
 - Los sockets son **non-blocking**, así que no siempre se puede enviar todo de golpe.
@@ -64,68 +307,36 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
   - Ningún mensaje se pierda
   - El servidor no se bloquee
 
----
+```
 
+**File:** README.md (L70-75)
+```markdown
 ### 5️⃣ Broadcast y canales
 
 - Cada canal tiene un conjunto de miembros: `Channel.members`
 - `broadcastToChannel()` envía mensajes a todos los miembros **excepto al emisor**
 - El servidor gestiona automáticamente **a quién enviar los mensajes** según los FDs de cada cliente
 
----
-
-### 6️⃣ Cliente “invisible”
-
-- El servidor **nunca actúa como cliente**.
-- Los usuarios se conectan mediante clientes externos, ej.:
-
-```bash
-nc 127.0.0.1 6667
 ```
 
-- Operaciones:
-
-  - `read()` → recibe mensajes del servidor
-  - `write()` → envía mensajes al servidor
-
-- Todo ocurre en línea dentro del servidor, sin necesidad de código cliente propio.
-
----
-
-## Flujo completo resumido
-
-```
-Cliente real (nc, irssi)
-        │ escribe mensaje
-        ▼
-Servidor (FD del cliente)
-        │ handleRead() → parsea línea → onLine() → handleCommand()
-        │
-        ├─ sendTo(c, msg) → sendBuf → handleWrite() → FD del cliente
-        └─ broadcastToChannel(...) → sendBuf de otros clientes → handleWrite()
-```
-
-**Notas importantes:**
-
-- Cada FD se gestiona individualmente
-- `POLLIN` → este cliente tiene datos para leer
-- `POLLOUT` → este cliente puede recibir datos sin bloquear
-- `sendBuf` → mensajes pendientes de enviar en orden FIFO
-
----
-
-## Cómo ejecutar
-
+**File:** README.md (L120-122)
+```markdown
 ```bash
 ./ft_irc <puerto> <contraseña>
 ```
+```
 
+**File:** README.md (L124-128)
+```markdown
 **Ejemplo:**
 
 ```bash
 ./ft_irc 6667 mypass
 ```
+```
 
+**File:** README.md (L130-138)
+```markdown
 - El servidor se queda en **bucle infinito** (`srv.run()`) escuchando clientes
 - Los clientes externos pueden conectarse con:
 
@@ -135,19 +346,10 @@ nc 127.0.0.1 6667
 
 - Todo mensaje enviado por el servidor aparecerá automáticamente en la terminal del cliente, gracias al loop interno de `nc`.
 
----
+```
 
-## Requisitos obligatorios
-
-- No usar `fork()`, ni múltiples hilos.
-- Solo un `poll()` (o equivalente) para todas las operaciones.
-- Comunicación vía TCP/IP (IPv4 o IPv6).
-- Cliente de referencia debe conectarse sin errores.
-- Implementar comandos IRC mínimos:
-  - `PASS`, `NICK`, `USER`, `JOIN`, `PRIVMSG`
-  - Comandos de operador: `KICK`, `INVITE`, `TOPIC`, `MODE`
-
----
+**File:** README.md (L152-159)
+```markdown
 ## Conceptos que se aprenden
 
 - Multiplexación de clientes en **un solo hilo** usando `poll()`
@@ -156,124 +358,194 @@ nc 127.0.0.1 6667
 - Implementación de un **mini parser IRC en tiempo real**
 - Gestión de **canales, broadcast y mensajes privados** sin un cliente propio
 
----
+```
 
+**File:** include/Server.hpp (L10-14)
+```text
+class Server {
+public:
+    Server(unsigned short port, const std::string& password);
+    ~Server();
+    void run();
+```
 
-# handler
+**File:** include/Server.hpp (L17-29)
+```text
+    void handleCommand(Client& c, const Cmd& cmd);
+    void cmdPASS(Client& c, const std::vector<std::string>& a);
+    void cmdNICK(Client& c, const std::vector<std::string>& a);
+    void cmdUSER(Client& c, const std::vector<std::string>& a);
+    void cmdPING(Client& c, const std::vector<std::string>& a);
+    void cmdQUIT(Client& c, const std::vector<std::string>& a);
+    void cmdJOIN(Client& c, const std::vector<std::string>& a);
+    void cmdPART(Client& c, const std::vector<std::string>& a);
+    void cmdPRIVMSG(Client& c, const std::vector<std::string>& a);
+    void cmdMODE (Client& c, const std::vector<std::string>& a);
+    void cmdTOPIC(Client& c, const std::vector<std::string>& a);
+    void cmdINVITE(Client& c, const std::vector<std::string>& a);
+    void cmdKICK (Client& c, const std::vector<std::string>& a);
+```
 
-## 🧠 ¿Qué es un handler de comando?
+**File:** include/Server.hpp (L35-39)
+```text
+    int listen_fd;
+    std::string password;
+    std::vector<struct pollfd> pfds;
+    std::map<int, Client> clients;
+    std::map<std::string, Channel> channels;
+```
 
-Un *handler* es una función que se encarga de **procesar un comando específico** enviado por un cliente. En este caso, cada comando IRC (como `NICK`, `JOIN`, `PRIVMSG`, etc.) tiene su propio método en la clase `Server`.
+**File:** include/Server.hpp (L41-41)
+```text
+    void initListen(unsigned short port);
+```
 
+**File:** include/Server.hpp (L42-42)
+```text
+    void setNonBlocking(int fd);
+```
 
-## 🧩 Lista de comandos y su propósito
+**File:** include/Server.hpp (L43-43)
+```text
+    void acceptNew();
+```
 
-### 🔐 `cmdPASS`
-- **Propósito**: Verifica la contraseña del cliente.
-- **Uso típico**: `PASS <contraseña>`
-- **Lógica esperada**:
-  - Comparar con `Server::password`.
-  - Marcar al cliente como autenticado si es correcta.
+**File:** include/Server.hpp (L44-44)
+```text
+    void handleRead(size_t idx);
+```
 
----
+**File:** include/Server.hpp (L45-45)
+```text
+    void handleWrite(size_t idx);
+```
 
-### 🧑 `cmdNICK`
-- **Propósito**: Establece o cambia el apodo del cliente.
-- **Uso típico**: `NICK <nuevo_nick>`
-- **Lógica esperada**:
-  - Verificar que el nick no esté en uso.
-  - Asignarlo al cliente.
-  - Notificar a otros usuarios si ya está en un canal.
+**File:** include/Server.hpp (L46-46)
+```text
+    void disconnect(size_t idx);
+```
 
----
+**File:** src/core/Server.cpp (L37-50)
+```cpp
+void Server::run(){
+    for(;;){
+        for (size_t i=1;i<pfds.size();++i){
+            int fd = pfds[i].fd;
+            pfds[i].events = clients[fd].sendBuf.empty()? POLLIN : (POLLIN|POLLOUT);
+        }
+        int n = ::poll(&pfds[0], pfds.size(), -1);
+        if (n < 0){ if (errno==EINTR) continue; throw std::runtime_error("poll failed"); }
 
-### 👤 `cmdUSER`
-- **Propósito**: Proporciona información del usuario (nombre real, etc.).
-- **Uso típico**: `USER <username> <hostname> <servername> <realname>`
-- **Lógica esperada**:
-  - Guardar los datos en el objeto `Client`.
-  - Intentar registrar al cliente si ya envió `PASS` y `NICK`.
+        if (pfds[0].revents & POLLIN) acceptNew();
 
----
+        for (size_t i=1;i<pfds.size();++i){
+            short ev = pfds[i].revents;
+            if (ev & (POLLERR|POLLHUP|POLLNVAL)) { disconnect(i--); continue; }
+```
 
-### 🔁 `cmdPING`
-- **Propósito**: Verifica que el cliente siga conectado.
-- **Uso típico**: `PING <token>`
-- **Lógica esperada**:
-  - Responder con `PONG <token>`.
+**File:** include/Client.hpp (L5-15)
+```text
+struct Client {
+    int fd;
+    std::string recvBuf, sendBuf;
+    std::string nick, user, realname;
+    bool passOk, registered;
+    bool closing;
+    std::set<std::string> channels;
 
----
+    Client(): fd(-1), passOk(false), registered(false), closing(false) {}
+    explicit Client(int f): fd(f), passOk(false), registered(false), closing(false) {}
+};
+```
 
-### ❌ `cmdQUIT`
-- **Propósito**: El cliente se desconecta voluntariamente.
-- **Uso típico**: `QUIT :<mensaje>`
-- **Lógica esperada**:
-  - Notificar a otros usuarios.
-  - Cerrar la conexión y limpiar recursos.
+**File:** include/Channel.hpp (L5-15)
+```text
+struct Channel {
+    std::string name, topic, key;
+    bool inviteOnly;     // +i
+    bool topicOpOnly;    // +t
+    int  limit;          // +l; -1 = sin límite
+    std::set<int> members, ops, invited;
 
----
+    Channel() : inviteOnly(false), topicOpOnly(false), limit(-1) {}
+    explicit Channel(const std::string& n)
+        : name(n), inviteOnly(false), topicOpOnly(false), limit(-1) {}
 
-### 📥 `cmdJOIN`
-- **Propósito**: El cliente entra a un canal.
-- **Uso típico**: `JOIN #canal`
-- **Lógica esperada**:
-  - Crear el canal si no existe.
-  - Añadir al cliente a la lista de miembros.
-  - Enviar la lista de usuarios y el topic del canal.
+```
 
----
+**File:** include/Channel.hpp (L17-19)
+```text
+    bool isMember(int fd)   const { return members.count(fd)   != 0; }
+    bool isOp(int fd)       const { return ops.count(fd)       != 0; }
+    bool isInvited(int fd)  const { return invited.count(fd)   != 0; }
+```
 
-### 📤 `cmdPART`
-- **Propósito**: El cliente sale de un canal.
-- **Uso típico**: `PART #canal`
-- **Lógica esperada**:
-  - Eliminar al cliente del canal.
-  - Notificar a los demás miembros.
+**File:** include/Channel.hpp (L22-27)
+```text
+    void setInviteOnly(bool on)      { inviteOnly = on; }
+    void setTopicRestricted(bool on) { topicOpOnly = on; }
+    void setKey(const std::string& k){ key = k; }
+    void clearKey()                  { key.clear(); }
+    void setLimit(int n)             { limit = n; }
+    void clearLimit()                { limit = -1; }
+```
 
----
+**File:** include/Channel.hpp (L30-33)
+```text
+    void addMember(int fd)   { members.insert(fd); invited.erase(fd); }
+    void removeMember(int fd){ members.erase(fd); ops.erase(fd); invited.erase(fd); }
+    void addOp(int fd)       { ops.insert(fd); }
+    void invite(int fd)      { invited.insert(fd); }
+```
 
-### 💬 `cmdPRIVMSG`
-- **Propósito**: Enviar un mensaje privado a un usuario o canal.
-- **Uso típico**: `PRIVMSG <destino> :<mensaje>`
-- **Lógica esperada**:
-  - Si el destino es un canal, reenviar a todos los miembros.
-  - Si es un usuario, reenviar directamente.
+**File:** include/Channel.hpp (L36-44)
+```text
+    bool canJoin(int fd, const std::string* providedKey) const {
+        if (limit >= 0 && (int)members.size() >= limit) return false;   // +l
+        if (!key.empty()) {
+            if (!providedKey || *providedKey != key) return false;      // +k
+        }
+        if (inviteOnly && invited.count(fd) == 0 && members.count(fd) == 0)
+            return false;                                               // +i
+        return true;
+    }
+```
 
----
+**File:** include/Parser.hpp (L6-6)
+```text
+struct Cmd { std::string verb; std::vector<std::string> args; };
+```
 
-### ⚙️ `cmdMODE`
-- **Propósito**: Cambiar modos de usuario o canal (como operador, privado, etc.).
-- **Uso típico**: `MODE #canal +o <nick>`
-- **Lógica esperada**:
-  - Validar permisos.
-  - Aplicar el cambio y notificar.
+**File:** include/Parser.hpp (L8-18)
+```text
+inline Cmd parseIrcLine(const std::string& line) {
+    Cmd out; std::string s = line, trailing;
+    std::string::size_type p = s.find(" :");
+    if (p != std::string::npos) { trailing = s.substr(p + 2); s.erase(p); }
+    std::istringstream iss(s);
+    iss >> out.verb;
+    for (std::string tok; iss >> tok; ) out.args.push_back(tok);
+    if (!trailing.empty()) out.args.push_back(trailing);
+    for (size_t i=0;i<out.verb.size();++i) out.verb[i]=std::toupper(out.verb[i]);
+    return out;
+}
+```
 
----
-
-### 📝 `cmdTOPIC`
-- **Propósito**: Ver o cambiar el tema del canal.
-- **Uso típico**: `TOPIC #canal :<nuevo tema>`
-- **Lógica esperada**:
-  - Si no hay argumento, mostrar el tema actual.
-  - Si hay argumento, cambiarlo (si tiene permisos).
-
----
-
-### 📩 `cmdINVITE`
-- **Propósito**: Invitar a un usuario a un canal.
-- **Uso típico**: `INVITE <nick> #canal`
-- **Lógica esperada**:
-  - Verificar que el canal existe y que el usuario tiene permisos.
-  - Enviar invitación al usuario.
-
----
-
-### 🦵 `cmdKICK`
-- **Propósito**: Expulsar a un usuario de un canal.
-- **Uso típico**: `KICK #canal <nick> :<razón>`
-- **Lógica esperada**:
-  - Verificar que el emisor es operador.
-  - Eliminar al usuario del canal.
-  - Notificar a todos los miembros.
-
----
+**File:** src/main.cpp (L5-19)
+```cpp
+int main(int argc, char** argv) {
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <port> <password>\n";
+        return 1;
+    }
+    unsigned short port = static_cast<unsigned short>(std::atoi(argv[1]));
+    std::string password = argv[2];
+    try {
+        Server srv(port, password);
+        srv.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Fatal: " << e.what() << "\n";
+        return 1;
+    }
+    return 0;
+```
