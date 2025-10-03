@@ -1,3 +1,14 @@
+# DeepWiki Q&A with Code Context for Repository: alejandro-ll/ft_irc
+
+
+## Q1
+
+puedes reconstruir el DeepWiki
+alejandro-ll/ft_irc, pero en  Español
+
+
+### Answer
+
 # DeepWiki ft_irc (Español)
 
 ## Índice
@@ -14,7 +25,7 @@
 
 ## Visión General del Proyecto
 
-Este proyecto implementa un **servidor IRC completo en C++** que permite la comunicación entre múltiples clientes usando el protocolo IRC estándar. [1](#0-0) 
+Este proyecto implementa un **servidor IRC completo en C++** que permite la comunicación entre múltiples clientes usando el protocolo IRC estándar. ft_irc:4-10 
 
 ### Conceptos Técnicos Principales
 
@@ -23,7 +34,7 @@ El proyecto enseña conceptos fundamentales de programación de redes:
 - **Multiplexación de clientes con poll()**
 - **Buffers FIFO para envío/recepción**
 - **Parsing en tiempo real de comandos IRC**
-- **Gestión de canales y broadcast de mensajes** [2](#0-1) 
+- **Gestión de canales y broadcast de mensajes** ft_irc:152-159 
 
 ---
 
@@ -31,7 +42,7 @@ El proyecto enseña conceptos fundamentales de programación de redes:
 
 ### Definición y Propósito
 
-La clase `Server` es el núcleo del sistema, responsable de gestionar todas las conexiones de clientes y procesar comandos IRC. [3](#0-2) 
+La clase `Server` es el núcleo del sistema, responsable de gestionar todas las conexiones de clientes y procesar comandos IRC. ft_irc:10-14 
 
 ### Atributos Principales
 
@@ -42,29 +53,29 @@ private:
     std::vector<struct pollfd> pfds;           // Array para poll()
     std::map<int, Client> clients;             // Clientes indexados por FD
     std::map<std::string, Channel> channels;   // Canales del servidor
-``` [4](#0-3) 
+``` ft_irc:35-39 
 
 ### Métodos de Gestión de Red
 
 La clase implementa métodos fundamentales para la gestión de sockets:
 
-- **Constructor**: Inicializa el puerto y contraseña [5](#0-4) 
-- **`run()`**: Bucle principal del servidor [6](#0-5) 
-- **`initListen()`**: Configura el socket de escucha [7](#0-6) 
-- **`setNonBlocking()`**: Configura sockets no bloqueantes [8](#0-7) 
+- **Constructor**: Inicializa el puerto y contraseña ft_irc:12-12 
+- **`run()`**: Bucle principal del servidor ft_irc:14-14 
+- **`initListen()`**: Configura el socket de escucha ft_irc:41-41 
+- **`setNonBlocking()`**: Configura sockets no bloqueantes ft_irc:42-42 
 
 ### Gestión de Clientes
 
 El servidor maneja eventos de clientes mediante:
 
-- **`acceptNew()`**: Acepta nuevas conexiones [9](#0-8) 
-- **`handleRead()`**: Procesa datos entrantes [10](#0-9) 
-- **`handleWrite()`**: Envía datos pendientes [11](#0-10) 
-- **`disconnect()`**: Desconecta clientes [12](#0-11) 
+- **`acceptNew()`**: Acepta nuevas conexiones ft_irc:43-43 
+- **`handleRead()`**: Procesa datos entrantes ft_irc:44-44 
+- **`handleWrite()`**: Envía datos pendientes ft_irc:45-45 
+- **`disconnect()`**: Desconecta clientes ft_irc:46-46 
 
 ### Procesamiento de Comandos
 
-Todos los comandos IRC son manejados por métodos específicos: [13](#0-12) 
+Todos los comandos IRC son manejados por métodos específicos: ft_irc:17-29 
 
 ### Implementación del Bucle Principal
 
@@ -72,7 +83,7 @@ El método `run()` implementa el patrón de multiplexación con `poll()`:
 
 1. **Configuración de eventos**: Cada cliente se marca para lectura, y opcionalmente para escritura si tiene datos pendientes
 2. **Llamada a poll()**: Espera eventos en todos los file descriptors
-3. **Procesamiento de eventos**: Maneja nuevas conexiones y eventos de clientes existentes [14](#0-13) 
+3. **Procesamiento de eventos**: Maneja nuevas conexiones y eventos de clientes existentes ft_irc:37-50 
 
 ---
 
@@ -80,7 +91,7 @@ El método `run()` implementa el patrón de multiplexación con `poll()`:
 
 ### Estructura y Propósito
 
-La estructura `Client` representa cada usuario conectado al servidor, manteniendo su estado de conexión y buffers de comunicación. [15](#0-14) 
+La estructura `Client` representa cada usuario conectado al servidor, manteniendo su estado de conexión y buffers de comunicación. ft_irc:5-15 
 
 ### Atributos del Cliente
 
@@ -91,13 +102,13 @@ Cada cliente mantiene:
 - **`nick`, `user`, `realname`**: Información de identificación
 - **`passOk`, `registered`**: Estados de autenticación
 - **`closing`**: Bandera de desconexión
-- **`channels`**: Conjunto de canales donde está el cliente [16](#0-15) 
+- **`channels`**: Conjunto de canales donde está el cliente ft_irc:6-11 
 
 ### Constructores
 
 La clase proporciona dos constructores:
 - Constructor por defecto que inicializa valores predeterminados
-- Constructor explícito que toma un file descriptor [17](#0-16) 
+- Constructor explícito que toma un file descriptor ft_irc:13-14 
 
 ---
 
@@ -105,7 +116,7 @@ La clase proporciona dos constructores:
 
 ### Definición y Funcionalidad
 
-La estructura `Channel` representa un canal IRC con todos sus modos, miembros y configuraciones. [18](#0-17) 
+La estructura `Channel` representa un canal IRC con todos sus modos, miembros y configuraciones. ft_irc:5-15 
 
 ### Atributos del Canal
 
@@ -113,19 +124,19 @@ Cada canal mantiene:
 
 - **Información básica**: `name`, `topic`, `key`
 - **Modos del canal**: `inviteOnly` (+i), `topicOpOnly` (+t), `limit` (+l)
-- **Listas de usuarios**: `members`, `ops`, `invited` [19](#0-18) 
+- **Listas de usuarios**: `members`, `ops`, `invited` ft_irc:6-10 
 
 ### Métodos de Consulta
 
-La clase proporciona métodos para verificar el estado de los usuarios: [20](#0-19) 
+La clase proporciona métodos para verificar el estado de los usuarios: ft_irc:17-19 
 
 ### Gestión de Modos
 
-Métodos para configurar los diferentes modos del canal: [21](#0-20) 
+Métodos para configurar los diferentes modos del canal: ft_irc:22-27 
 
 ### Gestión de Miembros
 
-Operaciones para administrar la membresía del canal: [22](#0-21) 
+Operaciones para administrar la membresía del canal: ft_irc:30-33 
 
 ### Validación de Acceso
 
@@ -133,7 +144,7 @@ El método `canJoin()` implementa la lógica completa para determinar si un usua
 
 - **Límite de usuarios** (+l)
 - **Clave del canal** (+k) 
-- **Solo por invitación** (+i) [23](#0-22) 
+- **Solo por invitación** (+i) ft_irc:36-44 
 
 ---
 
@@ -141,7 +152,7 @@ El método `canJoin()` implementa la lógica completa para determinar si un usua
 
 ### Estructura de Comandos
 
-El parser define una estructura simple para representar comandos IRC: [24](#0-23) 
+El parser define una estructura simple para representar comandos IRC: ft_irc:6-6 
 
 ### Función de Parsing
 
@@ -150,7 +161,7 @@ La función `parseIrcLine()` implementa el parsing completo de líneas IRC:
 1. **Separación de trailing**: Maneja parámetros que comienzan con ":"
 2. **Extracción del verbo**: Primer token de la línea
 3. **Procesamiento de argumentos**: Tokens adicionales
-4. **Normalización**: Convierte el verbo a mayúsculas [25](#0-24) 
+4. **Normalización**: Convierte el verbo a mayúsculas ft_irc:8-18 
 
 ---
 
@@ -158,7 +169,7 @@ La función `parseIrcLine()` implementa el parsing completo de líneas IRC:
 
 ### Patrón de Multiplexación
 
-El servidor utiliza `poll()` para manejar múltiples clientes simultáneamente en un solo hilo: [26](#0-25) 
+El servidor utiliza `poll()` para manejar múltiples clientes simultáneamente en un solo hilo: ft_irc:27-36 
 
 ### Flujo de Recepción (POLLIN)
 
@@ -167,7 +178,7 @@ Cuando un cliente envía datos:
 1. **Detección**: `poll()` marca `POLLIN` en el file descriptor
 2. **Lectura**: `handleRead()` acumula datos en `recvBuf`
 3. **Procesamiento**: Detecta líneas completas terminadas en `\r\n`
-4. **Ejecución**: Llama a `onLine()` → `handleCommand()` [27](#0-26) 
+4. **Ejecución**: Llama a `onLine()` → `handleCommand()` ft_irc:39-49 
 
 ### Flujo de Envío (POLLOUT)
 
@@ -176,14 +187,14 @@ Para enviar datos a clientes:
 1. **Encolado**: `sendTo()` agrega mensajes a `sendBuf`
 2. **Marcado**: Se activa `POLLOUT` para el file descriptor
 3. **Envío**: `handleWrite()` envía datos cuando sea posible
-4. **Gestión**: Mantiene datos no enviados para próximas iteraciones [28](#0-27) 
+4. **Gestión**: Mantiene datos no enviados para próximas iteraciones ft_irc:52-67 
 
 ### Broadcast en Canales
 
 El sistema de broadcast permite enviar mensajes a múltiples usuarios:
 
 - **`broadcastToChannel()`**: Envía a todos los miembros excepto al emisor
-- **Gestión automática**: El servidor determina a qué file descriptors enviar [29](#0-28) 
+- **Gestión automática**: El servidor determina a qué file descriptors enviar ft_irc:70-75 
 
 ---
 
@@ -193,31 +204,31 @@ El sistema de broadcast permite enviar mensajes a múltiples usuarios:
 
 El servidor implementa la secuencia estándar de autenticación IRC:
 
-- **`PASS`**: Verificación de contraseña [30](#0-29) 
-- **`NICK`**: Establecimiento de nickname [31](#0-30) 
-- **`USER`**: Información del usuario [32](#0-31) 
+- **`PASS`**: Verificación de contraseña ft_irc:18-18 
+- **`NICK`**: Establecimiento de nickname ft_irc:19-19 
+- **`USER`**: Información del usuario ft_irc:20-20 
 
 ### Comandos de Canal
 
 Gestión completa de canales IRC:
 
-- **`JOIN`**: Unirse a canales [33](#0-32) 
-- **`PART`**: Salir de canales [34](#0-33) 
-- **`TOPIC`**: Gestión de temas [35](#0-34) 
+- **`JOIN`**: Unirse a canales ft_irc:23-23 
+- **`PART`**: Salir de canales ft_irc:24-24 
+- **`TOPIC`**: Gestión de temas ft_irc:27-27 
 
 ### Comandos de Operador
 
 Funcionalidades administrativas:
 
-- **`MODE`**: Gestión de modos [36](#0-35) 
-- **`KICK`**: Expulsar usuarios [37](#0-36) 
-- **`INVITE`**: Invitar usuarios [38](#0-37) 
+- **`MODE`**: Gestión de modos ft_irc:26-26 
+- **`KICK`**: Expulsar usuarios ft_irc:29-29 
+- **`INVITE`**: Invitar usuarios ft_irc:28-28 
 
 ### Comandos de Comunicación
 
-- **`PRIVMSG`**: Mensajes privados y de canal [39](#0-38) 
-- **`PING`**: Verificación de conectividad [40](#0-39) 
-- **`QUIT`**: Desconexión del servidor [41](#0-40) 
+- **`PRIVMSG`**: Mensajes privados y de canal ft_irc:25-25 
+- **`PING`**: Verificación de conectividad ft_irc:21-21 
+- **`QUIT`**: Desconexión del servidor ft_irc:22-22 
 
 ---
 
@@ -225,19 +236,19 @@ Funcionalidades administrativas:
 
 ### Compilación y Ejecución
 
-El servidor se ejecuta desde línea de comandos: [42](#0-41) 
+El servidor se ejecuta desde línea de comandos: ft_irc:120-122 
 
 ### Ejemplo de Uso
 
-Para iniciar el servidor: [43](#0-42) 
+Para iniciar el servidor: ft_irc:124-128 
 
 ### Punto de Entrada
 
-El programa principal valida argumentos e inicializa el servidor: [44](#0-43) 
+El programa principal valida argumentos e inicializa el servidor: ft_irc:5-19 
 
 ### Conexión de Clientes
 
-Los clientes se conectan usando herramientas estándar: [45](#0-44) 
+Los clientes se conectan usando herramientas estándar: ft_irc:130-138 
 
 ---
 
@@ -247,9 +258,12 @@ Este proyecto implementa un servidor IRC completo siguiendo las especificaciones
 
 La implementación demuestra conceptos avanzados de programación de redes, incluyendo multiplexación de E/O, gestión de estados de conexión, y parsing de protocolos en tiempo real, todo ello manteniendo un código limpio y bien estructurado.
 
+
 ### Citations
 
+
 **File:** README.md (L4-10)
+
 ```markdown
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
 
@@ -261,6 +275,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L27-36)
+
 ```markdown
 ### 2️⃣ Multiplexación de clientes con `poll()`
 
@@ -275,6 +290,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L39-49)
+
 ```markdown
 ### 3️⃣ Recepción de mensajes (`POLLIN`)
 
@@ -290,6 +306,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L52-67)
+
 ```markdown
 ### 4️⃣ Envío de mensajes (`POLLOUT`)
 
@@ -310,6 +327,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L70-75)
+
 ```markdown
 ### 5️⃣ Broadcast y canales
 
@@ -320,6 +338,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L120-122)
+
 ```markdown
 ```bash
 ./ft_irc <puerto> <contraseña>
@@ -327,6 +346,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L124-128)
+
 ```markdown
 **Ejemplo:**
 
@@ -336,6 +356,7 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 ```
 
 **File:** README.md (L130-138)
+
 ```markdown
 - El servidor se queda en **bucle infinito** (`srv.run()`) escuchando clientes
 - Los clientes externos pueden conectarse con:
@@ -349,6 +370,7 @@ nc 127.0.0.1 6667
 ```
 
 **File:** README.md (L152-159)
+
 ```markdown
 ## Conceptos que se aprenden
 
@@ -361,6 +383,7 @@ nc 127.0.0.1 6667
 ```
 
 **File:** include/Server.hpp (L10-14)
+
 ```text
 class Server {
 public:
@@ -370,6 +393,7 @@ public:
 ```
 
 **File:** include/Server.hpp (L17-29)
+
 ```text
     void handleCommand(Client& c, const Cmd& cmd);
     void cmdPASS(Client& c, const std::vector<std::string>& a);
@@ -387,6 +411,7 @@ public:
 ```
 
 **File:** include/Server.hpp (L35-39)
+
 ```text
     int listen_fd;
     std::string password;
@@ -396,36 +421,43 @@ public:
 ```
 
 **File:** include/Server.hpp (L41-41)
+
 ```text
     void initListen(unsigned short port);
 ```
 
 **File:** include/Server.hpp (L42-42)
+
 ```text
     void setNonBlocking(int fd);
 ```
 
 **File:** include/Server.hpp (L43-43)
+
 ```text
     void acceptNew();
 ```
 
 **File:** include/Server.hpp (L44-44)
+
 ```text
     void handleRead(size_t idx);
 ```
 
 **File:** include/Server.hpp (L45-45)
+
 ```text
     void handleWrite(size_t idx);
 ```
 
 **File:** include/Server.hpp (L46-46)
+
 ```text
     void disconnect(size_t idx);
 ```
 
 **File:** src/core/Server.cpp (L37-50)
+
 ```cpp
 void Server::run(){
     for(;;){
@@ -444,6 +476,7 @@ void Server::run(){
 ```
 
 **File:** include/Client.hpp (L5-15)
+
 ```text
 struct Client {
     int fd;
@@ -459,6 +492,7 @@ struct Client {
 ```
 
 **File:** include/Channel.hpp (L5-15)
+
 ```text
 struct Channel {
     std::string name, topic, key;
@@ -474,6 +508,7 @@ struct Channel {
 ```
 
 **File:** include/Channel.hpp (L17-19)
+
 ```text
     bool isMember(int fd)   const { return members.count(fd)   != 0; }
     bool isOp(int fd)       const { return ops.count(fd)       != 0; }
@@ -481,6 +516,7 @@ struct Channel {
 ```
 
 **File:** include/Channel.hpp (L22-27)
+
 ```text
     void setInviteOnly(bool on)      { inviteOnly = on; }
     void setTopicRestricted(bool on) { topicOpOnly = on; }
@@ -491,6 +527,7 @@ struct Channel {
 ```
 
 **File:** include/Channel.hpp (L30-33)
+
 ```text
     void addMember(int fd)   { members.insert(fd); invited.erase(fd); }
     void removeMember(int fd){ members.erase(fd); ops.erase(fd); invited.erase(fd); }
@@ -499,6 +536,7 @@ struct Channel {
 ```
 
 **File:** include/Channel.hpp (L36-44)
+
 ```text
     bool canJoin(int fd, const std::string* providedKey) const {
         if (limit >= 0 && (int)members.size() >= limit) return false;   // +l
@@ -512,11 +550,13 @@ struct Channel {
 ```
 
 **File:** include/Parser.hpp (L6-6)
+
 ```text
 struct Cmd { std::string verb; std::vector<std::string> args; };
 ```
 
 **File:** include/Parser.hpp (L8-18)
+
 ```text
 inline Cmd parseIrcLine(const std::string& line) {
     Cmd out; std::string s = line, trailing;
@@ -532,6 +572,7 @@ inline Cmd parseIrcLine(const std::string& line) {
 ```
 
 **File:** src/main.cpp (L5-19)
+
 ```cpp
 int main(int argc, char** argv) {
     if (argc != 3) {
@@ -549,3 +590,4 @@ int main(int argc, char** argv) {
     }
     return 0;
 ```
+
