@@ -53,7 +53,9 @@ private:
     std::vector<struct pollfd> pfds;           // Array para poll()
     std::map<int, Client> clients;             // Clientes indexados por FD
     std::map<std::string, Channel> channels;   // Canales del servidor
-``` ft_irc:35-39 
+``` 
+
+
 
 ### Métodos de Gestión de Red
 
@@ -264,7 +266,7 @@ La implementación demuestra conceptos avanzados de programación de redes, incl
 
 **File:** README.md (L4-10)
 
-```markdown
+
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
 
 - Sockets TCP
@@ -272,11 +274,12 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 - Parsing de comandos IRC
 
 **Nota:** No incluye un cliente propio. Se espera que los clientes sean externos, como `nc`, `irssi` o cualquier otro cliente IRC.
-```
+
 
 **File:** README.md (L27-36)
 
-```markdown
+
+
 ### 2️⃣ Multiplexación de clientes con `poll()`
 
 - Cada cliente se representa con un **FD** y un objeto `Client`.
@@ -287,11 +290,11 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 
 - `poll()` permite **gestionar múltiples clientes simultáneamente** sin necesidad de hilos extra.
 
-```
+
 
 **File:** README.md (L39-49)
 
-```markdown
+
 ### 3️⃣ Recepción de mensajes (`POLLIN`)
 
 - Cuando un cliente envía datos, el FD marca `POLLIN`.
@@ -303,11 +306,10 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
 
 - Cada línea se procesa **en tiempo real**, interpretando comandos IRC como `PRIVMSG`, `JOIN`, etc.
 
-```
 
-**File:** README.md (L52-67)
 
-```markdown
+
+
 ### 4️⃣ Envío de mensajes (`POLLOUT`)
 
 - Los sockets son **non-blocking**, así que no siempre se puede enviar todo de golpe.
@@ -324,54 +326,54 @@ Este proyecto implementa un **servidor IRC simple en C++** para comprender los c
   - Ningún mensaje se pierda
   - El servidor no se bloquee
 
-```
+
 
 **File:** README.md (L70-75)
 
-```markdown
+
 ### 5️⃣ Broadcast y canales
 
 - Cada canal tiene un conjunto de miembros: `Channel.members`
 - `broadcastToChannel()` envía mensajes a todos los miembros **excepto al emisor**
 - El servidor gestiona automáticamente **a quién enviar los mensajes** según los FDs de cada cliente
 
-```
+
 
 **File:** README.md (L120-122)
 
-```markdown
+
 ```bash
 ./ft_irc <puerto> <contraseña>
 ```
-```
+
 
 **File:** README.md (L124-128)
 
-```markdown
+
 **Ejemplo:**
 
 ```bash
 ./ft_irc 6667 mypass
 ```
-```
+
 
 **File:** README.md (L130-138)
 
-```markdown
+
 - El servidor se queda en **bucle infinito** (`srv.run()`) escuchando clientes
 - Los clientes externos pueden conectarse con:
 
-```bash
+```
 nc 127.0.0.1 6667
 ```
 
 - Todo mensaje enviado por el servidor aparecerá automáticamente en la terminal del cliente, gracias al loop interno de `nc`.
 
-```
+
 
 **File:** README.md (L152-159)
 
-```markdown
+
 ## Conceptos que se aprenden
 
 - Multiplexación de clientes en **un solo hilo** usando `poll()`
@@ -380,7 +382,7 @@ nc 127.0.0.1 6667
 - Implementación de un **mini parser IRC en tiempo real**
 - Gestión de **canales, broadcast y mensajes privados** sin un cliente propio
 
-```
+
 
 **File:** include/Server.hpp (L10-14)
 
