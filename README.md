@@ -1,15 +1,6 @@
-# DeepWiki Q&A with Code Context for Repository: alejandro-ll/ft_irc
+# ft_irc
 
 
-## Q1
-
-puedes reconstruir el DeepWiki
-alejandro-ll/ft_irc, pero en  Español
-
-
-### Answer
-
-# DeepWiki ft_irc (Español)
 
 ## Índice
 1. [Visión General del Proyecto](#visión-general-del-proyecto)
