@@ -206,7 +206,7 @@ void Server::handleWrite(size_t idx)
     Client &c = clients[fd];
     while (!c.sendBuf.empty())
     {
-        ssize_t n = ::send(fd, c.sendBuf.data(), c.sendBuf.size(), 0);
+        ssize_t n = ::send(fd, c.sendBuf.data(), c.sendBuf.size(), 0); /* byte sent */
         if (n > 0)
             c.sendBuf.erase(0, n);
         else
@@ -228,12 +228,10 @@ void Server::disconnect(size_t idx)
 {
     int fd = pfds[idx].fd;
 
-    // Clean up channels if client was still member
+    /* Clean up channels if client was still member */
     std::map<int, Client>::iterator it = clients.find(fd);
     if (it != clients.end() && !it->second.channels.empty())
-    {
         quitCleanup(it->second, "Connection closed");
-    }
     ::close(fd);
     clients.erase(fd);
     pfds[idx] = pfds.back();
