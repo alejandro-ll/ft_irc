@@ -46,62 +46,62 @@ El servidor debe responder con `PONG :test123`
 
 **Comando JOIN:** [4]
 
-- Cliente1: `JOIN #test` (se convierte en operador automáticamente)
-- Cliente2: `JOIN #test` (se une como miembro regular)
-- Cliente1: `JOIN #privado secreto` (canal con clave)
+- Cliente1:---> `JOIN #test` (se convierte en operador automáticamente)
+- Cliente2:---> `JOIN #test` (se une como miembro regular)
+- Cliente1:---> `JOIN #privado secreto` (canal con clave)
 
 **Comando PART:** [5]
 
-- Cliente2: `PART #test`
-- Cliente2: `JOIN #test` (para volver a unirse)
+- Cliente2:---> `PART #test`
+- Cliente2:---> `JOIN #test` (para volver a unirse)
 
 ## Pruebas de Mensajería
 
 **Comando PRIVMSG:** [6]
 
-- Cliente1: `PRIVMSG #test :Hola canal desde cliente1`
-- Cliente2: `PRIVMSG #test :Respuesta desde cliente2`
-- Cliente1: `PRIVMSG cliente2 :Mensaje privado directo`
-- Cliente2: `PRIVMSG cliente1 :Respuesta privada`
+- Cliente1:---> `PRIVMSG #test :Hola canal desde cliente1`
+- Cliente2:---> `PRIVMSG #test :Respuesta desde cliente2`
+- Cliente1:---> `PRIVMSG cliente2 :Mensaje privado directo`
+- Cliente2:---> `PRIVMSG cliente1 :Respuesta privada`
 
 ## Pruebas de Administración de Canales
 
 **Comando MODE:** [7]
 
-- Cliente1: `MODE #test` (mostrar modos actuales)
-- Cliente1: `MODE #test +i` (canal solo por invitación)
-- Cliente1: `MODE #test +t` (solo operadores pueden cambiar topic)
-- Cliente1: `MODE #test +k clave123` (establecer clave del canal)
-- Cliente1: `MODE #test +l 5` (límite de 5 usuarios)
-- Cliente1: `MODE #test +o cliente2` (dar privilegios de operador a cliente2)
-- Cliente1: `MODE #test -i` (quitar modo solo invitación)
-- Cliente1: `MODE #test -k` (quitar clave)
-- Cliente1: `MODE #test -l` (quitar límite)
-- Cliente2: `MODE #test -o cliente1` (quitar privilegios de operador)
+- Cliente1:---> `MODE #test` (mostrar modos actuales)
+- Cliente1:---> `MODE #test +i` (canal solo por invitación)
+- Cliente1:---> `MODE #test +t` (solo operadores pueden cambiar topic)
+- Cliente1:---> `MODE #test +k clave123` (establecer clave del canal)
+- Cliente1:---> `MODE #test +l 5` (límite de 5 usuarios)
+- Cliente1:---> `MODE #test +o cliente2` (dar privilegios de operador a cliente2)
+- Cliente1:---> `MODE #test -i` (quitar modo solo invitación)
+- Cliente1:---> `MODE #test -k` (quitar clave)
+- Cliente1:---> `MODE #test -l` (quitar límite)
+- Cliente2:---> `MODE #test -o cliente1` (quitar privilegios de operador)
 
 **Comando TOPIC:** [8]
 
-- Cliente1: `TOPIC #test` (mostrar topic actual)
-- Cliente1: `TOPIC #test :Nuevo tema del canal de pruebas`
-- Cliente2: `TOPIC #test :Otro tema` (debería funcionar si es operador)
+- Cliente1:---> `TOPIC #test` (mostrar topic actual)
+- Cliente1:---> `TOPIC #test :Nuevo tema del canal de pruebas`
+- Cliente2:---> `TOPIC #test :Otro tema` (debería funcionar si es operador)
 
 **Comando INVITE:** [9]
 
-- Cliente1: `MODE #test +i` (hacer canal solo por invitación)
-- Cliente2: `PART #test` (salir del canal)
-- Cliente1: `INVITE cliente2 #test` (invitar a cliente2)
-- Cliente2: `JOIN #test` (ahora debería poder entrar)
+- Cliente1:---> `MODE #test +i` (hacer canal solo por invitación)
+- Cliente2:---> `PART #test` (salir del canal)
+- Cliente1:---> `INVITE cliente2 #test` (invitar a cliente2)
+- Cliente2:---> `JOIN #test` (ahora debería poder entrar)
 
 **Comando KICK:** [10]
 
-- Cliente1: `KICK #test cliente2 :Expulsado por pruebas`
+- Cliente1:---> `KICK #test cliente2 :Expulsado por pruebas`
 - Cliente2 debería ser expulsado del canal automáticamente
 
 ## Pruebas de Desconexión
 
 **Comando QUIT:** [11]
 
-- Cliente2: `QUIT :Me voy del servidor`
+- Cliente2:---> `QUIT :Me voy del servidor`
 - El servidor debe limpiar automáticamente todos los canales donde estaba cliente2
 
 ## Secuencia de Pruebas Completa
