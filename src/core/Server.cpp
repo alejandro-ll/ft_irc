@@ -57,11 +57,11 @@ void Server::initListen(unsigned short port)
     if (listen_fd < 0)
         throw std::runtime_error("socket failed");
     int yes = 1;
-    ::setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+    ::setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)); /*SO_REUSEADDR: Prevents Address already in use*/
     sockaddr_in addr;
     std::memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY); /*INADDR_ANY: Listens on all interfaces*/
     addr.sin_port = htons(port);
     if (::bind(listen_fd, (sockaddr *)&addr, sizeof(addr)) < 0)
         throw std::runtime_error("bind failed");
