@@ -21,8 +21,8 @@ Server::Server(unsigned short port, const std::string &pwd)
     initListen(port);
     struct pollfd p;
     p.fd = listen_fd;
-    p.events = POLLIN;
-    p.revents = 0;
+    p.events = POLLIN; /* listening socket for incoming connections */
+    p.revents = 0;     /* NO events*/
     pfds.push_back(p);
 }
 
