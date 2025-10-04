@@ -19,7 +19,7 @@ Server::Server(unsigned short port, const std::string &pwd)
     : listen_fd(-1), password(pwd)
 {
     initListen(port);
-    struct pollfd p;
+    struct pollfd p; /* fd, events, revents */
     p.fd = listen_fd;
     p.events = POLLIN; /* listening socket for incoming connections */
     p.revents = 0;     /* NO events*/
@@ -53,12 +53,11 @@ void Server::setNonBlocking(int fd)
  */
 void Server::initListen(unsigned short port)
 {
-    listen_fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_fd < 0)
-        throw std::runtime_error("socket failed");
+    listen_fd = ::socket(AF_INET, SOCK_STREAM, 0); /* Protocol: IPv4, Socket type: TCP, Protocol: default (0) */
+    throw std::runtime_error("socket failed");
     int yes = 1;
-    ::setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)); /*SO_REUSEADDR: Prevents Address already in use*/
-    sockaddr_in addr;
+    ::setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)); /*SO_REUSEADDR: Prevents Error: Address already in use*/
+    sockaddr_in addr;                                                     /*COMMS structure family, addr, port*/
     std::memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); /*INADDR_ANY: Listens on all interfaces*/
