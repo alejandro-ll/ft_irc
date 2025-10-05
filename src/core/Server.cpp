@@ -62,9 +62,9 @@ void Server::initListen(unsigned short port)
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); /*INADDR_ANY: Listens on all interfaces*/
     addr.sin_port = htons(port);
-    if (::bind(listen_fd, (sockaddr *)&addr, sizeof(addr)) < 0)
+    if (::bind(listen_fd, (sockaddr *)&addr, sizeof(addr)) < 0) /*Associate the socket with the address*/
         throw std::runtime_error("bind failed");
-    if (::listen(listen_fd, 128) < 0)
+    if (::listen(listen_fd, 128) < 0) /*Listen for connections (max 128 pending)*/
         throw std::runtime_error("listen failed");
     setNonBlocking(listen_fd);
 }
@@ -138,7 +138,7 @@ void Server::acceptNew()
 {
     for (;;)
     {
-        int cfd = ::accept(listen_fd, NULL, NULL);
+        int cfd = ::accept(listen_fd, NULL, NULL); /*extracts the first pending connection from the listening socket's queue*/
         if (cfd < 0)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
