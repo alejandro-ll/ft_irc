@@ -147,7 +147,7 @@ void Server::acceptNew()
             break;
         }
         setNonBlocking(cfd);
-        clients.insert(std::make_pair(cfd, Client(cfd)));
+        clients.insert(std::make_pair(cfd, Client(cfd))); /*Maps (fd → Client) and inserts into clients structure*/
         struct pollfd p;
         p.fd = cfd;
         p.events = POLLIN;
@@ -164,11 +164,11 @@ void Server::acceptNew()
 void Server::handleRead(size_t idx)
 {
     int fd = pfds[idx].fd;
-    Client &c = clients[fd];
+    Client &c = clients[fd]; /* Extract client structure from (map clients)*/
     char buf[4096];
     for (;;)
     {
-        ssize_t r = ::recv(fd, buf, sizeof(buf), 0);
+        ssize_t r = ::recv(fd, buf, sizeof(buf), 0); /* byte received from socket*/
         if (r > 0)
         {
             c.recvBuf.append(buf, r);
@@ -177,10 +177,10 @@ void Server::handleRead(size_t idx)
             {
                 std::string line = c.recvBuf.substr(0, pos);
                 c.recvBuf.erase(0, pos + 2);
-                onLine(c, line);
+                onLine(c, line); /* Process complete IRC line */
             }
         }
-        else if (r == 0)
+        else if (r == 0) /*client disconnected*/
         {
             disconnect(idx);
             return;
