@@ -202,7 +202,7 @@ void Server::handleRead(size_t idx)
 void Server::handleWrite(size_t idx)
 {
     int fd = pfds[idx].fd;
-    Client &c = clients[fd];
+    Client &c = clients[fd]; /* Extract client structure from (map clients)*/
     while (!c.sendBuf.empty())
     {
         ssize_t n = ::send(fd, c.sendBuf.data(), c.sendBuf.size(), 0); /* byte sent */
@@ -216,7 +216,7 @@ void Server::handleWrite(size_t idx)
             return;
         }
     }
-    pfds[idx].events &= ~POLLOUT;
+    pfds[idx].events &= ~POLLOUT; // Clears the POLLOUT bit to stop monitoring write readiness
 }
 
 /**
