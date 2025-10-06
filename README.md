@@ -1,4 +1,3 @@
-
 # Proyecto ft_irc
 
 Este proyecto implementa un **servidor IRC simple en C++** para comprender los conceptos básicos de:
@@ -93,6 +92,48 @@ nc 127.0.0.1 6667
 
 ---
 
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        SERVIDOR IRC                             │
+├─────────────────┬───────────────────────────┬───────────────────┤
+│   MONITOREO     │       DATOS CLIENTES      │    CANALES        │
+│     (pfds)      │        (clients)          │   (channels)      │
+├─────────────────┼───────────────────────────┼───────────────────┤
+│                 │                           │                   │
+│ vector<pollfd>  │    map<int, Client>       │ map<string,       │
+│                 │                           │    Channel>       │
+│ ┌─────────────┐ │ ┌───────────────────────┐ │ ┌───────────────┐ │
+│ │ idx: 0      │ │ │ KEY: 4 (fd)           │ │ │ KEY: "#tech"  │ │
+│ │   fd: 3     │ │ │ VALUE: Client{...}    │ │ │ VALUE:        │ │
+│ │   events:   │ │ │   - nick: "ana"       │ │ │   Channel{    │ │
+│ │   POLLIN    │ │ │   - channels:         │ │ │   - members:  │ │
+│ └─────────────┘ │ │     {"#tech"}         │ │ │     {4, 5}    │ │
+│                 │ └───────────────────────┘ │ │   - ops: {4}  │ │
+│ ┌─────────────┐ │ ┌───────────────────────┐ │ └───────────────┘ │
+│ │ idx: 1      │ │ │ KEY: 5 (fd)           │ │                   │
+│ │   fd: 4     │ │ │ VALUE: Client{...}    │ │ ┌───────────────┐ │
+│ │   events:   │ │ │   - nick: "john"      │ │ │ KEY: "#music" │ │
+│ │   POLLIN    │ │ │   - channels:         │ │ │ VALUE:        │ │
+│ └─────────────┘ │ │     {"#tech","#music"}│ │ │   Channel{    │ │
+│                 │ └───────────────────────┘ │ │   - members:  │ │
+│ ┌─────────────┐ │ ┌───────────────────────┐ │ │     {5, 7}    │ │
+│ │ idx: 2      │ │ │ KEY: 7 (fd)           │ │ │   - ops: {5}  │ │
+│ │   fd: 5     │ │ │ VALUE: Client{...}    │ │ └───────────────┘ │
+│ │   events:   │ │ │   - nick: "mary"      │ │                   │
+│ │   POLLOUT   │ │ │   - channels:         │ │                   │
+│ └─────────────┘ │ │     {"#music"}        │ │                   │
+│                 │ └───────────────────────┘ │                   │
+└─────────────────┴───────────────────────────┴───────────────────┘
+         │                    │                         │
+         │                    │                         │
+         └─── LIGADO POR ─────┘                         │
+               FILE DESCRIPTOR                          │
+                        │                               │
+                        └─────── LIGADO POR ────────────┘
+                                NOMBRE CANAL
+
+```
+
 ## Flujo completo resumido
 
 ```
@@ -149,6 +190,7 @@ nc 127.0.0.1 6667
   - Comandos de operador: `KICK`, `INVITE`, `TOPIC`, `MODE`
 
 ---
+
 ## Conceptos que se aprenden
 
 - Multiplexación de clientes en **un solo hilo** usando `poll()`
