@@ -229,12 +229,12 @@ void Server::disconnect(size_t idx)
 
     /* Clean up channels if client was still member */
     std::map<int, Client>::iterator it = clients.find(fd);
-    if (it != clients.end() && !it->second.channels.empty())
+    if (it != clients.end() && !it->second.channels.empty()) /*NOT is the .end & NOT is .empty*/
         quitCleanup(it->second, "Connection closed");
     ::close(fd);
     clients.erase(fd);
-    pfds[idx] = pfds.back();
-    pfds.pop_back();
+    pfds[idx] = pfds.back(); /* Replace target with last element (swap) */
+    pfds.pop_back();         /* Remove last element (now duplicated) */
 }
 
 /**
@@ -257,7 +257,7 @@ void Server::markWrite(int fd)
     for (size_t i = 1; i < pfds.size(); ++i)
         if (pfds[i].fd == fd)
         {
-            pfds[i].events |= POLLOUT;
+            pfds[i].events |= POLLOUT; /*pfds[i].events =  pfds[i].events | POLLOUT*/
             break;
         }
 }
@@ -296,7 +296,7 @@ void Server::broadcastToChannel(const Channel &ch, int fromFd, const std::string
 {
     for (std::set<int>::const_iterator it = ch.members.begin(); it != ch.members.end(); ++it)
     {
-        if (*it == fromFd)
+        if (*it == fromFd) /* Except fromFd*/
             continue;
         std::map<int, Client>::iterator ci = clients.find(*it);
         if (ci != clients.end())
@@ -312,22 +312,22 @@ void Server::broadcastToChannel(const Channel &ch, int fromFd, const std::string
 void Server::quitCleanup(Client &c, const std::string &reason)
 {
     const std::string quitMsg = ":" + (c.nick.empty() ? "*" : c.nick) + " QUIT :" + reason + "\r\n";
-    std::vector<std::string> chans(c.channels.begin(), c.channels.end());
+    std::vector<std::string> chans(c.channels.begin(), c.channels.end()); /*Copy channels*/
     for (size_t i = 0; i < chans.size(); ++i)
     {
-        std::map<std::string, Channel>::iterator it = channels.find(chans[i]);
+        std::map<std::string, Channel>::iterator it = channels.find(chans[i]); /* Find channel in server */
         if (it == channels.end())
             continue;
-        Channel &ch = it->second;
-        broadcastToChannel(ch, c.fd, quitMsg);
+        Channel &ch = it->second;              /* Get channel reference*/
+        broadcastToChannel(ch, c.fd, quitMsg); /* Notify all channel members */
         ch.removeMember(c.fd);
         c.channels.erase(chans[i]);
         if (ch.members.empty())
             channels.erase(it);
         else if (ch.ops.empty())
         {
-            int promote = *ch.members.begin();
-            ch.addOp(promote);
+            int promote = *ch.members.begin(); /* Get first member */
+            ch.addOp(promote);                 /* Promote to operator */
         }
     }
 }
