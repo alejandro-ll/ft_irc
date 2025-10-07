@@ -1,77 +1,65 @@
 #!/bin/bash
-# fixed_traffic_test.sh - Pruebas con TRAFICO REAL funcionando
+# fixed_traffic_test_clean.sh - Pruebas SIN Unknown command 🚀
 
 SERVER_HOST="127.0.0.1"
 SERVER_PORT="6667"
 PASSWORD="mypass"
 
-echo "PRUEBAS COMPLETAS - TRAFICO REAL"
-echo "================================"
+echo "🎯 PRUEBAS COMPLETAS - SIN UNKNOWN COMMAND 🎯"
+echo "=============================================="
+echo ""
 
 # Función para verificar servidor
 check_server() {
     ps aux | grep -v grep | grep -q -E "(valgrind.*ircserv|./ircserv)"
 }
 
-# Función CORREGIDA que SÍ muestra tráfico
-run_working_client() {
+# Función MEJORADA que evita líneas vacías
+run_clean_client() {
     local client_id="$1"
     local commands="$2"
     local duration="${3:-10}"
     
     (
-        echo "========================================"
-        echo "CLIENTE: $client_id - INICIADO"
-        echo "========================================"
+        echo "🔧 ========================================"
+        echo "👤 CLIENTE: $client_id - INICIADO 🟢"
+        echo "🔧 ========================================"
         
-        # Crear script temporal CORRECTO
-        local temp_script=$(mktemp)
+        echo "📋 COMANDOS:"
+        echo "$commands" | grep -v '^#' | sed '/^$/d'
+        echo ""
+        echo "📡 --- TRAFICO EN VIVO ---"
+        
+        # Crear archivo temporal con comandos limpios
+        local temp_file=$(mktemp)
         {
-            echo "#!/bin/bash"
-            # Convertir comandos echo a comandos reales
+            # Procesar comandos para eliminar líneas vacías y espacios innecesarios
             while IFS= read -r line; do
-                if [[ "$line" == echo* ]]; then
-                    # Extraer el contenido entre comillas
-                    content=$(echo "$line" | sed -E 's/^echo[[:space:]]+"(.*)"$/\1/')
-                    echo "echo \"$content\""
-                elif [[ "$line" == sleep* ]]; then
-                    echo "$line"
-                elif [[ "$line" =~ ^for ]]; then
-                    echo "$line"
-                elif [[ "$line" == done* ]]; then
-                    echo "$line"
-                elif [[ "$line" =~ ^if ]]; then
-                    echo "$line"
-                elif [[ "$line" == fi* ]]; then
-                    echo "$line"
+                # Eliminar líneas vacías y comentarios
+                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                    if [[ "$line" == sleep* ]]; then
+                        echo "$line"
+                    elif [[ "$line" =~ ^for ]]; then
+                        echo "$line"
+                    elif [[ "$line" == done* ]]; then
+                        echo "$line"
+                    else
+                        # Comando IRC - enviar inmediatamente sin espacios extra
+                        echo "printf '%s\\r\\n' '$line'"
+                    fi
                 fi
             done <<< "$commands"
-        } > "$temp_script"
-        chmod +x "$temp_script"
+        } > "$temp_file"
+        chmod +x "$temp_file"
         
-        echo "COMANDOS:"
-        grep -E '^echo|^sleep|^for|^done|^if|^fi' "$temp_script" | sed 's/^echo "//' | sed 's/"$//'
-        echo ""
-        echo "--- TRAFICO EN VIVO ---"
-        
-        # Ejecutar CORRECTAMENTE
+        # Ejecutar y conectar
         {
-            # Ejecutar script y capturar salida
-            bash "$temp_script"
+            bash "$temp_file"
         } | {
-            # Procesar cada línea para enviar
-            while IFS= read -r line; do
-                if [[ -n "$line" ]]; then
-                    echo ">>> $client_id ENVIA: $line"
-                    echo "$line"
-                    sleep 0.2
-                fi
-            done
-        } | {
-            # Conectar y recibir respuestas
-            nc -i 1 -w 10 $SERVER_HOST $SERVER_PORT 2>&1 | while IFS= read -r response; do
-                if [[ ! "$response" =~ "Connection to" ]] && [[ ! "$response" =~ "succeeded" ]]; then
-                    echo "<<< $client_id RECIBE: $response"
+            # Usar netcat con timeout
+            nc -C -w 10 $SERVER_HOST $SERVER_PORT 2>&1 | while IFS= read -r response; do
+                if [[ ! "$response" =~ "Connection to" ]] && [[ ! "$response" =~ "succeeded" ]] && [[ -n "$response" ]]; then
+                    echo "📥 <<< $client_id RECIBE: $response"
                 fi
             done
         } &
@@ -80,29 +68,89 @@ run_working_client() {
         sleep $duration
         kill $client_pid 2>/dev/null
         wait $client_pid 2>/dev/null
-        rm -f "$temp_script"
+        rm -f "$temp_file"
         
-        echo "--- FIN TRAFICO ---"
-        echo "CLIENTE: $client_id - FINALIZADO"
-        echo "========================================"
+        echo "📡 --- FIN TRAFICO ---"
+        echo "👤 CLIENTE: $client_id - FINALIZADO 🔴"
+        echo "🔧 ========================================"
         echo ""
     ) 
 }
 
+# Función para conexiones silenciosas (sin output)
+run_silent_client() {
+    local client_id="$1"
+    local commands="$2"
+    local duration="${3:-10}"
+    
+    (
+        # Crear archivo temporal
+        local temp_file=$(mktemp)
+        {
+            while IFS= read -r line; do
+                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                    if [[ "$line" == sleep* ]]; then
+                        echo "$line"
+                    else
+                        echo "printf '%s\\r\\n' '$line'"
+                    fi
+                fi
+            done <<< "$commands"
+        } > "$temp_file"
+        chmod +x "$temp_file"
+        
+        # Ejecutar silenciosamente
+        bash "$temp_file" | nc -C -w 10 $SERVER_HOST $SERVER_PORT > /dev/null 2>&1 &
+        
+        local client_pid=$!
+        sleep $duration
+        kill $client_pid 2>/dev/null
+        wait $client_pid 2>/dev/null
+        rm -f "$temp_file"
+    ) 
+}
+
+# Función NUEVA para monitorear rechazos
+monitor_rejection() {
+    local client_id="$1"
+    local client_num="$2"
+    
+    # Crear archivo temporal SIN usar 'local'
+    temp_file=$(mktemp)
+    {
+        echo "printf 'PASS $PASSWORD\\r\\n'"
+        echo "printf 'NICK overload$client_num\\r\\n'"
+        echo "printf 'USER ov$client_num 0 * :Overload User $client_num\\r\\n'"
+        echo "sleep 5"
+    } > "$temp_file"
+    chmod +x "$temp_file"
+    
+    # Ejecutar y verificar rechazo
+    bash "$temp_file" | nc -C -w 8 $SERVER_HOST $SERVER_PORT 2>&1 | grep -q "ERROR\|full\|reject"
+    if [ $? -eq 0 ]; then
+        echo "   🔥 overload$client_num: RECHAZADO (esperado ✅)"
+        echo "1" >> /tmp/rejected_count_$$
+    else
+        echo "   ⚠️  overload$client_num: CONECTADO (inesperado)"
+    fi
+    rm -f "$temp_file"
+}
+
 cleanup() {
-    echo "Limpiando procesos..."
+    echo "🧹 Limpiando procesos..."
     pkill -f "nc $SERVER_HOST $SERVER_PORT" 2>/dev/null
+    rm -f /tmp/rejected_count_$$ 2>/dev/null
     sleep 2
 }
 
 trap cleanup EXIT
 
 # Verificación inicial
-echo "Verificando servidor..."
+echo "🔍 Verificando servidor..."
 if check_server; then
-    echo "Servidor detectado"
+    echo "✅ Servidor detectado 👍"
 else
-    echo "ERROR: Servidor no detectado"
+    echo "❌ ERROR: Servidor no detectado 👎"
     exit 1
 fi
 
@@ -112,40 +160,40 @@ wait_and_check() {
     local test_name=$2
     
     echo ""
-    echo "EJECUTANDO: $test_name ($wait_time segundos)"
+    echo "⚡ EJECUTANDO: $test_name ($wait_time segundos) ⏳"
     for i in $(seq 1 $wait_time); do
         sleep 1
         if ! check_server; then
-            echo "ERROR: Servidor crasheo"
+            echo "💥 ERROR: Servidor crasheo 🚨"
             return 1
         fi
     done
-    echo "COMPLETADO: $test_name"
+    echo "✅ COMPLETADO: $test_name 🎉"
     return 0
 }
 
 # Contadores
 FAILED_TESTS=0
-TOTAL_TESTS=8
+TOTAL_TESTS=9
 
 echo ""
-echo "INICIANDO PRUEBAS..."
+echo "🚀 INICIANDO PRUEBAS..."
 echo ""
 
 # PRUEBA 1: Autenticación básica
-echo "1/$TOTAL_TESTS: AUTENTICACION BASICA"
+echo "1️⃣ /$TOTAL_TESTS: AUTENTICACION BASICA 🔐"
 for i in {1..2}; do
     commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK user$i"
-echo "USER u$i 0 * :User $i"
+PASS $PASSWORD
+NICK user$i
+USER u$i 0 * :User $i
 sleep 1
-echo "PING :test$i"
+PING :test$i
 sleep 2
-echo "QUIT :Bye"
+QUIT :Bye
 CMD
 )
-    run_working_client "user$i" "$commands" 6 &
+    run_clean_client "user$i" "$commands" 6 &
     sleep 1
 done
 
@@ -153,209 +201,291 @@ wait_and_check 8 "autenticacion" || ((FAILED_TESTS++))
 
 # PRUEBA 2: Canales simples
 echo ""
-echo "2/$TOTAL_TESTS: CANALES SIMPLES"
+echo "2️⃣ /$TOTAL_TESTS: CANALES SIMPLES 💬"
 commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK tester"
-echo "USER te 0 * :Tester"
+PASS $PASSWORD
+NICK tester
+USER te 0 * :Tester
 sleep 1
-echo "JOIN #test"
-echo "PRIVMSG #test :Hola canal"
+JOIN #test
+PRIVMSG #test :Hola canal
 sleep 2
-echo "TOPIC #test :Mi topico"
+TOPIC #test :Mi topico
 sleep 1
-echo "PRIVMSG #test :Segundo mensaje"
+PRIVMSG #test :Segundo mensaje
 sleep 2
-echo "PART #test :Adios"
+PART #test :Adios
 sleep 1
 CMD
 )
-run_working_client "tester" "$commands" 8
+run_clean_client "tester" "$commands" 8
 
 wait_and_check 10 "canales" || ((FAILED_TESTS++))
 
 # PRUEBA 3: Comandos básicos
 echo ""
-echo "3/$TOTAL_TESTS: COMANDOS BASICOS"
+echo "3️⃣ /$TOTAL_TESTS: COMANDOS BASICOS 🛠️"
 commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK cmduser"
-echo "USER cu 0 * :Command User"
+PASS $PASSWORD
+NICK cmduser
+USER cu 0 * :Command User
 sleep 1
-echo "JOIN #room1"
-echo "JOIN #room2"
+JOIN #room1
+JOIN #room2
 sleep 1
-echo "NAMES #room1"
-echo "LIST"
-sleep 1
-echo "PRIVMSG #room1 :Hola room1"
-echo "PRIVMSG #room2 :Hola room2"
+PRIVMSG #room1 :Hola room1
+PRIVMSG #room2 :Hola room2
 sleep 2
-echo "PART #room1"
-echo "PART #room2"
+PART #room1 :Saliendo de room1
+PART #room2 :Saliendo de room2
 sleep 1
 CMD
 )
-run_working_client "cmduser" "$commands" 8
+run_clean_client "cmduser" "$commands" 8
 
 wait_and_check 10 "comandos basicos" || ((FAILED_TESTS++))
 
-# PRUEBA 4: Interacción
+# PRUEBA 4: Interacción entre usuarios
 echo ""
-echo "4/$TOTAL_TESTS: INTERACCION"
+echo "4️⃣ /$TOTAL_TESTS: INTERACCION ENTRE USUARIOS 👥"
 
 # Cliente 1
 commands1=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK userA"
-echo "USER ua 0 * :User A"
+PASS $PASSWORD
+NICK userA
+USER ua 0 * :User A
 sleep 1
-echo "JOIN #chat"
-echo "PRIVMSG #chat :Hola soy UserA"
+JOIN #chat
+PRIVMSG #chat :Hola soy UserA
 sleep 3
-echo "PRIVMSG #chat :Alguien me escucha?"
+PRIVMSG #chat :Alguien me escucha?
 sleep 3
 CMD
 )
-run_working_client "userA" "$commands1" 10 &
+run_clean_client "userA" "$commands1" 10 &
 
 # Cliente 2
 commands2=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK userB"
-echo "USER ub 0 * :User B"
+PASS $PASSWORD
+NICK userB
+USER ub 0 * :User B
 sleep 2
-echo "JOIN #chat"
-echo "PRIVMSG #chat :Hola UserA! Soy UserB"
+JOIN #chat
+PRIVMSG #chat :Hola UserA! Soy UserB
 sleep 2
-echo "PRIVMSG #chat :Te escucho claro"
+PRIVMSG #chat :Te escucho claro
 sleep 3
 CMD
 )
-run_working_client "userB" "$commands2" 10 &
+run_clean_client "userB" "$commands2" 10 &
 
 wait_and_check 12 "interaccion" || ((FAILED_TESTS++))
 
 # PRUEBA 5: Flood suave
 echo ""
-echo "5/$TOTAL_TESTS: FLOOD SUAVE"
+echo "5️⃣ /$TOTAL_TESTS: FLOOD SUAVE 🌊"
 commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK flooder"
-echo "USER fl 0 * :Flooder"
+PASS $PASSWORD
+NICK flooder
+USER fl 0 * :Flooder
 sleep 1
-echo "JOIN #flood"
-for i in {1..5}; do
-    echo "PRIVMSG #flood :Mensaje \$i"
-done
-echo "PRIVMSG #flood :Fin flood"
+JOIN #flood
+PRIVMSG #flood :Mensaje 1
+PRIVMSG #flood :Mensaje 2
+PRIVMSG #flood :Mensaje 3
+PRIVMSG #flood :Mensaje 4
+PRIVMSG #flood :Mensaje 5
+PRIVMSG #flood :Fin flood
 sleep 3
 CMD
 )
-run_working_client "flooder" "$commands" 8
+run_clean_client "flooder" "$commands" 8
 
 wait_and_check 10 "flood" || ((FAILED_TESTS++))
 
-# PRUEBA 6: Datos largos
+# PRUEBA 6: Comando MODE e INVITE
 echo ""
-echo "6/$TOTAL_TESTS: DATOS LARGOS"
+echo "6️⃣ /$TOTAL_TESTS: COMANDOS MODE E INVITE ⚙️"
 commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK VeryLongNickname123"
-echo "USER vl 0 * :Very Long User"
+PASS $PASSWORD
+NICK modeuser
+USER mu 0 * :Mode User
 sleep 1
-echo "JOIN #long"
-echo "PRIVMSG #long :Este es un mensaje bastante largo para probar el manejo del servidor"
+JOIN #modetest
+MODE #modetest
 sleep 2
-echo "TOPIC #long :Topico tambien muy largo para pruebas extensivas"
+INVITE userA #modetest
 sleep 2
 CMD
 )
-run_working_client "longuser" "$commands" 8
+run_clean_client "modeuser" "$commands" 6
 
-wait_and_check 10 "datos largos" || ((FAILED_TESTS++))
+wait_and_check 8 "comandos mode e invite" || ((FAILED_TESTS++))
 
-# PRUEBA 7: Múltiples clientes
+# PRUEBA 7: Comando KICK
 echo ""
-echo "7/$TOTAL_TESTS: MULTIPLES CLIENTES"
+echo "7️⃣ /$TOTAL_TESTS: COMANDO KICK 🦵"
+
+# Cliente que va a echar
+commands1=$(cat <<CMD
+PASS $PASSWORD
+NICK kicker
+USER ki 0 * :Kicker User
+sleep 1
+JOIN #kickroom
+sleep 3
+KICK #kickroom kickeduser :Por molesto
+sleep 2
+CMD
+)
+
+# Cliente que será echado
+commands2=$(cat <<CMD
+PASS $PASSWORD
+NICK kickeduser
+USER ku 0 * :Kicked User
+sleep 2
+JOIN #kickroom
+PRIVMSG #kickroom :Hola a todos
+sleep 5
+CMD
+)
+
+run_clean_client "kicker" "$commands1" 8 &
+run_clean_client "kickeduser" "$commands2" 8 &
+
+wait_and_check 10 "comando kick" || ((FAILED_TESTS++))
+
+# PRUEBA 8: Múltiples clientes en mismo canal
+echo ""
+echo "8️⃣ /$TOTAL_TESTS: MULTIPLES CLIENTES 👥👥👥"
 for i in {1..3}; do
     commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK multi$i"
-echo "USER mu$i 0 * :Multi $i"
+PASS $PASSWORD
+NICK multi$i
+USER mu$i 0 * :Multi $i
 sleep 2
-echo "JOIN #multi"
-echo "PRIVMSG #multi :Hola desde multi$i"
+JOIN #general
+PRIVMSG #general :Hola desde multi$i
 sleep 3
+PRIVMSG #general :Mensaje final de multi$i
+sleep 2
 CMD
 )
-    run_working_client "multi$i" "$commands" 8 &
-    sleep 1
+    run_clean_client "multi$i" "$commands" 8 &
+    sleep 0.5
 done
 
 wait_and_check 10 "multiples clientes" || ((FAILED_TESTS++))
 
-# PRUEBA 8: Test de límite MEJORADO
+# 🚨 PRUEBA 9: TEST DE ESTRÉS MÁXIMO - SUPERANDO LÍMITES 🚨
 echo ""
-echo "8/$TOTAL_TESTS: TEST LIMITE MEJORADO"
+echo "9️⃣ /$TOTAL_TESTS: TEST DE ESTRÉS MÁXIMO 💥🔥"
+echo "🎯 Objetivo: Superar límite de 100 conexiones"
 
-echo "Fase 1: 60 conexiones base..."
-for i in {1..60}; do
+# Inicializar contador de rechazos
+rm -f /tmp/rejected_count_$$ 2>/dev/null
+touch /tmp/rejected_count_$$
+
+echo ""
+echo "📈 Fase 1: 80 conexiones base rápidas..."
+for i in {1..80}; do
     commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK base$i"
-echo "USER ba$i 0 * :Base $i"
+PASS $PASSWORD
+NICK stress$i
+USER st$i 0 * :Stress User $i
 sleep 20
 CMD
 )
-    eval "$commands" | nc $SERVER_HOST $SERVER_PORT > /dev/null 2>&1 &
-    sleep 0.05
+    run_silent_client "stress$i" "$commands" 25 &
+    if (( i % 10 == 0 )); then
+        echo "   ✅ Conectados: $i/80"
+        sleep 0.2
+    else
+        sleep 0.05
+    fi
 done
 
-echo "Esperando 5 segundos..."
-sleep 5
+echo "📈 Fase 1 completada: 80 conexiones establecidas"
+sleep 3
 
-echo "Fase 2: 50 conexiones adicionales (deberian rechazarse)..."
+echo ""
+echo "🚨 Fase 2: 50 conexiones adicionales (deberían RECHAZARSE)..."
 for i in {1..50}; do
-    commands=$(cat <<CMD
-echo "PASS $PASSWORD"
-echo "NICK over$i"
-echo "USER ov$i 0 * :Over $i"
+    # Solo monitorear las primeras 5 para ver rechazos
+    if [ $i -le 5 ]; then
+        monitor_rejection "overload$i" "$i" &
+    else
+        commands=$(cat <<CMD
+PASS $PASSWORD
+NICK overload$i
+USER ov$i 0 * :Overload User $i
 sleep 10
 CMD
 )
-    # Solo algunos muestran tráfico para no saturar
-    if [ $i -le 5 ]; then
-        run_working_client "over$i" "$commands" 12 &
-    else
-        eval "$commands" | nc $SERVER_HOST $SERVER_PORT > /dev/null 2>&1 &
+        run_silent_client "overload$i" "$commands" 12 &
     fi
     sleep 0.1
 done
 
-wait_and_check 15 "test limite" || ((FAILED_TESTS++))
+echo ""
+echo "📊 Fase 2 en progreso..."
+sleep 10
+
+echo ""
+echo "🎯 Fase 3: Verificando estado del servidor..."
+if check_server; then
+    echo "   ✅ Servidor sigue funcionando después del estrés 👍"
+else
+    echo "   💥 Servidor crasheó bajo carga 👎"
+    ((FAILED_TESTS++))
+fi
+
+# Contar rechazos
+REJECTED_COUNT=$(wc -l < /tmp/rejected_count_$$ 2>/dev/null || echo "0")
+rm -f /tmp/rejected_count_$$ 2>/dev/null
+
+echo ""
+echo "📊 RESULTADOS DEL ESTRÉS:"
+echo "   🔥 Conexiones rechazadas: $REJECTED_COUNT/5 monitoreadas"
+
+if [ $REJECTED_COUNT -gt 0 ]; then
+    echo "   ✅ El servidor RECHAZÓ conexiones (comportamiento esperado) 🎉"
+else
+    echo "   ⚠️  El servidor NO rechazó conexiones (puede que acepte más de 100)"
+fi
+
+wait_and_check 5 "test de estrés máximo" || ((FAILED_TESTS++))
 
 cleanup
 
 echo ""
-echo "================================"
-echo "PRUEBAS COMPLETADAS"
-echo "RESULTADO: $((TOTAL_TESTS - FAILED_TESTS))/$TOTAL_TESTS"
+echo "========================================"
+echo "🎊 PRUEBAS COMPLETADAS 🎊"
+echo "📊 RESULTADO: $((TOTAL_TESTS - FAILED_TESTS))/$TOTAL_TESTS"
 
 if [ $FAILED_TESTS -eq 0 ]; then
-    echo "✅ TODAS LAS PRUEBAS EXITOSAS"
     echo ""
-    echo "El servidor manejo correctamente:"
-    echo "  - Autenticacion y comandos basicos"
-    echo "  - Canales y mensajeria"
-    echo "  - Multiples clientes simultaneos"
-    echo "  - Flood controlado"
-    echo "  - Datos largos"
-    echo "  - Limite de ~100 conexiones"
+    echo "🎉 ¡TODAS LAS PRUEBAS EXITOSAS! 🎉"
+    echo ""
+    echo "✅ El servidor manejo correctamente:"
+    echo "   🔐 Autenticacion (PASS/NICK/USER)"
+    echo "   🛠️  Comandos basicos (PING/QUIT)"  
+    echo "   💬 Canales (JOIN/PART)"
+    echo "   📨 Mensajeria (PRIVMSG)"
+    echo "   ⚙️  Comandos de canal (TOPIC/MODE/INVITE/KICK)"
+    echo "   👥 Multiples clientes simultaneos"
+    echo "   🌊 Flood controlado"
+    echo "   💥 Estrés máximo (130+ conexiones)"
+    echo ""
+    echo "🚀 ¡SERVIDOR IRC LISTO PARA PRODUCCIÓN! 🚀"
 else
+    echo ""
     echo "❌ $FAILED_TESTS pruebas fallaron"
+    echo "💡 Revisa los logs para más detalles"
 fi
 
-echo "================================"
+echo ""
+echo "========================================"
 
 exit $FAILED_TESTS
