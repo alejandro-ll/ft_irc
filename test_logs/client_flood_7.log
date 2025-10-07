@@ -1,0 +1,19 @@
+=== CLIENTE flood_7 - Flood controlado ===
+📤 ENVIANDO:
+echo "PASS mypass"
+echo "NICK flooder7"
+echo "USER fl7 0 * :Flooder 7"
+sleep 1
+echo "JOIN #floodchannel"
+# Flood de mensajes
+for j in {1..50}; do
+    echo "PRIVMSG #floodchannel :Flood message $j from flooder7"
+done
+echo "PRIVMSG #floodchannel :Fin del flood desde flooder7"
+sleep 5
+
+📥 RECIBIENDO:
+Connection to 127.0.0.1 6667 port [tcp/ircd] succeeded!
+
+--- FIN CLIENTE flood_7 ---
+

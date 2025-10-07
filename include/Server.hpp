@@ -42,6 +42,7 @@ private:
     std::vector<struct pollfd> pfds;         /* Poll file descriptors for I/O multiplexing */
     std::map<int, Client> clients;           /* Connected clients by file descriptor */
     std::map<std::string, Channel> channels; /* Active channels by name */
+    static const size_t MAX_CLIENTS = 100;
 
     /* === Network initialization and management === */
     void initListen(unsigned short port);

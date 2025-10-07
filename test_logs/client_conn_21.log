@@ -1,0 +1,13 @@
+=== CLIENTE conn_21 - Conexión normal ===
+📤 ENVIANDO:
+echo "PASS mypass"
+echo "NICK conn21"
+echo "USER co21 0 * :Connection 21"
+sleep 4
+echo "QUIT :Desconexión normal 21"
+
+📥 RECIBIENDO:
+Connection to 127.0.0.1 6667 port [tcp/ircd] succeeded!
+
+--- FIN CLIENTE conn_21 ---
+

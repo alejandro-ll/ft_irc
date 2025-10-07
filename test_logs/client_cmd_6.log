@@ -1,0 +1,22 @@
+=== CLIENTE cmd_6 - Comandos intensivos ===
+📤 ENVIANDO:
+echo "PASS mypass"
+echo "NICK cmduser6"
+echo "USER cu6 0 * :Command User 6"
+sleep 1
+echo "JOIN #main"
+echo "JOIN #secondary"
+echo "PRIVMSG #main :Hola desde el usuario 6"
+echo "PRIVMSG #secondary :Mensaje en canal secundario 6"
+echo "PING :test_ping_6"
+for j in {1..10}; do
+    echo "PRIVMSG #main :Mensaje rápido $j de 6"
+done
+echo "PART #secondary :Saliendo del canal secundario"
+sleep 10
+
+📥 RECIBIENDO:
+Connection to 127.0.0.1 6667 port [tcp/ircd] succeeded!
+
+--- FIN CLIENTE cmd_6 ---
+

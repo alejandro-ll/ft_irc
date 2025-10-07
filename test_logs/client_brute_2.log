@@ -1,0 +1,5 @@
+=== CLIENTE brute_2 ===
+📤 ENVIANDO conexión y desconexión brutal
+PASS mypass
+NICK brute2
+USER br2 0 * :Brute 2

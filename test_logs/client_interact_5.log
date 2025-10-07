@@ -1,0 +1,22 @@
+=== CLIENTE interact_5 - Interacción en canal ===
+📤 ENVIANDO:
+echo "PASS mypass"
+echo "NICK interact5"
+echo "USER in5 0 * :Interact User 5"
+sleep 1
+echo "JOIN #room0"
+# Enviar múltiples mensajes
+for msg in {1..8}; do
+    echo "PRIVMSG #room0 :Mensaje $msg del usuario 5 en room0"
+    sleep 0.5
+done
+# Cambio de nick
+echo "NICK interact_new5"
+echo "PRIVMSG #room0 :Acabo de cambiar mi nick a interact_new5"
+sleep 8
+
+📥 RECIBIENDO:
+Connection to 127.0.0.1 6667 port [tcp/ircd] succeeded!
+
+--- FIN CLIENTE interact_5 ---
+

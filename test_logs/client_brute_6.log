@@ -1,0 +1,5 @@
+=== CLIENTE brute_6 ===
+📤 ENVIANDO conexión y desconexión brutal
+PASS mypass
+NICK brute6
+USER br6 0 * :Brute 6

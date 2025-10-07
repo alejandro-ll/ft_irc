@@ -135,26 +135,46 @@ void Server::run()
 /**
  * @brief Accepts new client connections and adds to poll set
  */
+/**
+ * @brief Accepts new client connections and adds to poll set
+ */
 void Server::acceptNew()
 {
     for (;;)
     {
-        int cfd = ::accept(listen_fd, NULL, NULL); /*extracts the first pending connection from the listening socket's queue*/
+        int cfd = ::accept(listen_fd, NULL, NULL);
         if (cfd < 0)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
+            if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
+            {
+                // Límite del sistema alcanzado - no es un error fatal
+                std::fprintf(stderr, "⚠️  Límite de conexiones alcanzado (errno=%d: %s)\n",
+                             errno, strerror(errno));
+                break;
+            }
             std::perror("accept");
             break;
         }
+
+        // Verificar si podemos manejar más clientes
+        if (clients.size() >= MAX_CLIENTS)
+        {
+            std::fprintf(stderr, "⚠️  Límite máximo de clientes alcanzado (%zu), rechazando conexión\n",
+                         clients.size());
+            ::close(cfd);
+            break;
+        }
+
         setNonBlocking(cfd);
-        clients.insert(std::make_pair(cfd, Client(cfd))); /*Maps (fd → Client) and inserts into clients structure*/
+        clients.insert(std::make_pair(cfd, Client(cfd)));
         struct pollfd p;
         p.fd = cfd;
         p.events = POLLIN;
         p.revents = 0;
         pfds.push_back(p);
-        std::fprintf(stderr, "Nuevo cliente (fd=%d)\n", cfd);
+        std::fprintf(stderr, "Nuevo cliente (fd=%d, total=%zu)\n", cfd, clients.size());
     }
 }
 

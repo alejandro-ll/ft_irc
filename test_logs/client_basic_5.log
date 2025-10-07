@@ -1,0 +1,12 @@
+=== CLIENTE basic_5 - Conexión básica ===
+📤 ENVIANDO:
+echo "PASS mypass"
+echo "NICK user5"  
+echo "USER u5 0 * :Usuario de Prueba 5"
+sleep 15
+
+📥 RECIBIENDO:
+Connection to 127.0.0.1 6667 port [tcp/ircd] succeeded!
+
+--- FIN CLIENTE basic_5 ---
+
