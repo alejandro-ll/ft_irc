@@ -54,7 +54,8 @@ void Server::setNonBlocking(int fd)
 void Server::initListen(unsigned short port)
 {
     listen_fd = ::socket(AF_INET, SOCK_STREAM, 0); /* Protocol: IPv4, Socket type: TCP, Protocol: default (0) */
-    throw std::runtime_error("socket failed");
+    if (listen_fd < 0)
+        throw std::runtime_error("socket failed");
     int yes = 1;
     ::setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)); /*SO_REUSEADDR: Prevents Error: Address already in use*/
     sockaddr_in addr;                                                     /*COMMS structure family, addr, port*/
