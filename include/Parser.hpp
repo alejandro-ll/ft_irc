@@ -23,13 +23,13 @@ inline Cmd parseIrcLine(const std::string &line)
     std::string s = line, trailing;
     /* Extract trailing parameter (after " :") */
     std::string::size_type p = s.find(" :");
-    if (p != std::string::npos)
+    if (p != std::string::npos) /*npos (whithout position?)*/
     {
         trailing = s.substr(p + 2);
         s.erase(p);
     }
     /* Split remaining string into tokens */
-    std::istringstream iss(s);
+    std::istringstream iss(s); /* Convert the string into a stream for easy tokenization */
     iss >> out.verb;
     for (std::string tok; iss >> tok;)
         out.args.push_back(tok);
