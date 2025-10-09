@@ -44,7 +44,7 @@ void Server::setNonBlocking(int fd)
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags < 0)
         flags = 0;
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK); /*Add non-blocking flag to descript*/
 }
 
 /**
@@ -65,7 +65,7 @@ void Server::initListen(unsigned short port)
     addr.sin_port = htons(port);
     if (::bind(listen_fd, (sockaddr *)&addr, sizeof(addr)) < 0) /*Associate the socket with the address*/
         throw std::runtime_error("bind failed");
-    if (::listen(listen_fd, 128) < 0) /*Listen for connections (max 128 pending)*/
+    if (::listen(listen_fd, 128) < 0) /*Listen(state) for connections (max 128 pending)*/
         throw std::runtime_error("listen failed");
     setNonBlocking(listen_fd);
 }
