@@ -127,11 +127,15 @@ nc 127.0.0.1 6667
          │                    │                         │
          │                    │                         │
          └─── LIGADO POR ─────┘                         │
-               FILE DESCRIPTOR                          │
+               FILE DESCRIPTOR (fd)                     │
                         │                               │
                         └─────── LIGADO POR ────────────┘
-                                NOMBRE CANAL
-
+                          Client.channels ↔ Channel.name
+                                 │
+                        ┌───────┴───────┐
+                        │               │
+                  Channel.members   Client.channels
+                  (set<int> de fds) (set<string> de nombres)
 ```
 
 ## Flujo completo resumido
