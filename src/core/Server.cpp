@@ -196,7 +196,7 @@ void Server::handleRead(size_t idx)
         {
             c.recvBuf.append(buf, r);
             std::string::size_type pos;
-            while ((pos = c.recvBuf.find("\r\n")) != std::string::npos)
+            while ((pos = c.recvBuf.find("\r\n")) != std::string::npos) /* if exist pos(\r\n) */
             {
                 std::string line = c.recvBuf.substr(0, pos);
                 c.recvBuf.erase(0, pos + 2);
