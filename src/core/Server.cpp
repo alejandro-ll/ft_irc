@@ -81,7 +81,10 @@ void Server::run()
         for (size_t i = 1; i < pfds.size(); ++i)
         {
             int fd = pfds[i].fd;
-            pfds[i].events = clients[fd].sendBuf.empty() ? POLLIN : (POLLIN | POLLOUT);
+            if (clients[fd].sendBuf.empty())             
+                pfds[i].events = POLLIN; /*monitor READ*/ 
+            else    
+                pfds[i].events = POLLIN | POLLOUT;/*monitor READ and WRITE*/
         }
 
         /* Wait for events on all file descriptors (infinite timeout) */
