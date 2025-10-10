@@ -170,7 +170,7 @@ void Server::acceptNew()
         }
 
         setNonBlocking(cfd);
-        clients.insert(std::make_pair(cfd, Client(cfd)));
+        clients.insert(std::make_pair(cfd, Client(cfd))); /*void client-> Client{fd=6, nick="", ...}*/
         struct pollfd p;
         p.fd = cfd;
         p.events = POLLIN;
