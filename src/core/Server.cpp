@@ -104,7 +104,7 @@ void Server::run()
         for (size_t i = 1; i < pfds.size(); ++i)
         {
             short ev = pfds[i].revents;
-            if (ev & (POLLERR | POLLHUP | POLLNVAL))
+            if (ev & (POLLERR | POLLHUP | POLLNVAL)) /* Socket Err/Close/Invalid*/
             {
                 disconnect(i--);
                 continue;
