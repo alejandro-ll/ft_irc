@@ -153,7 +153,7 @@ void Server::acceptNew()
             if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
             {
                 // Límite del sistema alcanzado - no es un error fatal
-                std::fprintf(stderr, "⚠️  Límite de conexiones alcanzado (errno=%d: %s)\n",
+                std::fprintf(stderr, "⚠️  Maximum connections reached  (errno=%d: %s)\n",
                              errno, strerror(errno));
                 break;
             }
@@ -164,8 +164,8 @@ void Server::acceptNew()
         // Verificar si podemos manejar más clientes
         if (clients.size() >= MAX_CLIENTS)
         {
-            std::fprintf(stderr, "⚠️  Límite máximo de clientes alcanzado (%zu), rechazando conexión\n",
-                         clients.size());
+            std::fprintf(stderr, "⚠️  Maximum client limit reached (%zu), rejecting connection\n",
+             clients.size());
             ::close(cfd);
             break;
         }
