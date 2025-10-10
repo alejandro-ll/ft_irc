@@ -334,7 +334,11 @@ void Server::broadcastToChannel(const Channel &ch, int fromFd, const std::string
  */
 void Server::quitCleanup(Client &c, const std::string &reason)
 {
-    const std::string quitMsg = ":" + (c.nick.empty() ? "*" : c.nick) + " QUIT :" + reason + "\r\n";
+    std::string quitMsg;
+        if (c.nick.empty())
+            quitMsg = ":* QUIT :" + reason + "\r\n";
+        else
+            quitMsg = ":" + c.nick + " QUIT :" + reason + "\r\n";
     std::vector<std::string> chans(c.channels.begin(), c.channels.end()); /*Copy channels*/
     for (size_t i = 0; i < chans.size(); ++i)
     {
