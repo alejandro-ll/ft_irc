@@ -203,7 +203,7 @@ void Server::handleRead(size_t idx)
                 onLine(c, line); /* Process complete IRC line */
             }
         }
-        else if (r == 0) /*client disconnected*/
+        else if (r == 0) /*client (socket) disconnected*/
         {
             disconnect(idx);
             return;
