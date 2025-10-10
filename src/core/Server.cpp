@@ -348,7 +348,7 @@ void Server::quitCleanup(Client &c, const std::string &reason)
         Channel &ch = it->second;              /* Get channel reference*/
         broadcastToChannel(ch, c.fd, quitMsg); /* Notify all channel members */
         ch.removeMember(c.fd); /* Removes client from channel */
-        c.channels.erase(chans[i]);
+        c.channels.erase(chans[i]); /* Removes channel from client */
         if (ch.members.empty())
             channels.erase(it);
         else if (ch.ops.empty())
