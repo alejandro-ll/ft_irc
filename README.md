@@ -132,8 +132,8 @@ nc 127.0.0.1 6667
                         └─────── LIGADO POR ────────────┘
                           Client.channels ↔ Channel.name
                                  │
-                        ┌───────┴───────┐
-                        │               │
+                         ┌───────┴───────┐
+                         │               │
                   Channel.members   Client.channels
                   (set<int> de fds) (set<string> de nombres)
 ```
