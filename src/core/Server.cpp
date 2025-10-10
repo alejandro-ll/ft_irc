@@ -145,7 +145,7 @@ void Server::acceptNew()
 {
     for (;;)
     {
-        int cfd = ::accept(listen_fd, NULL, NULL);
+        int cfd = ::accept(listen_fd, NULL, NULL); /*Extract pending connection from server and assign a client fd*/
         if (cfd < 0)
         {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
