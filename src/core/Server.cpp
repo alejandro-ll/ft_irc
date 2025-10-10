@@ -175,8 +175,8 @@ void Server::acceptNew()
         p.fd = cfd;
         p.events = POLLIN;
         p.revents = 0;
-        pfds.push_back(p);
-        std::fprintf(stderr, "Nuevo cliente (fd=%d, total=%zu)\n", cfd, clients.size());
+        pfds.push_back(p); /*inset new client into pdfs*/
+        std::fprintf(stderr, "New client (fd=%d, total=%zu)\n", cfd, clients.size());
     }
 }
 
