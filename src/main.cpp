@@ -13,7 +13,7 @@
 
 void introServer()
 {
-    const std::string green = "\033[1;32m"; // bright green
+    const std::string green = "\033[1;32m";
     const std::string reset = "\033[0m";
 
     std::cout << green << std::endl;
