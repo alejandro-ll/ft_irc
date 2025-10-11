@@ -1,15 +1,25 @@
 #include <iostream>
 #include <cstdlib>
 #include "Server.hpp"
-
 #include <iostream>
+
+#include <cstdlib>
+#include <csignal>
 
 /**
  * @brief Prints a green ASCII art banner for the IRC server
  */
-#include <iostream>
 
-#include <iostream>
+// Variable global para controlar el shutdown
+volatile sig_atomic_t g_shutdown = 0;
+
+// Handler de señal
+void signalHandler(int signal)
+{
+    (void)signal;
+    g_shutdown = 1;
+    std::cout << "\n🛑 Received shutdown signal. Closing server...\n";
+}
 
 void introServer()
 {
@@ -47,6 +57,10 @@ int main(int argc, char **argv)
         std::cerr << "Usage: " << argv[0] << " <port> <password>\n";
         return 1;
     }
+
+    std::signal(SIGINT, signalHandler);  // Ctrl+C
+    std::signal(SIGTERM, signalHandler); // kill command
+
     unsigned short port = static_cast<unsigned short>(std::atoi(argv[1]));
     std::string password = argv[2];
     try

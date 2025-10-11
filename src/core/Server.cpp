@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cstdlib>
+#include <csignal>
 
 /**
  * @brief Constructs server instance and initializes listening socket
@@ -75,7 +77,8 @@ void Server::initListen(unsigned short port)
  */
 void Server::run()
 {
-    for (;;)
+    extern volatile sig_atomic_t g_shutdown;
+    for (; !g_shutdown;)
     {
         /* Set poll events: always POLLIN, +POLLOUT if data pending to send */
         for (size_t i = 1; i < pfds.size(); ++i)
@@ -92,7 +95,11 @@ void Server::run()
         if (n < 0)
         {
             if (errno == EINTR)
+            {
+                if (g_shutdown)
+                    break; // ← Salir si recibimos señal durante poll
                 continue;
+            }
             throw std::runtime_error("poll failed");
         }
 
