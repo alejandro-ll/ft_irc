@@ -34,7 +34,20 @@ Server::Server(unsigned short port, const std::string &pwd)
 Server::~Server()
 {
     if (listen_fd >= 0)
+    {
         ::close(listen_fd);
+        std::fprintf(stderr, "🔒 Closed server socket fd=%d\n", listen_fd);
+    }
+
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        ::close(it->first);
+        std::fprintf(stderr, "🔒 Closed client socket fd=%d\n", it->first);
+    }
+    clients.clear();
+    pfds.clear();
+
+    std::fprintf(stderr, "✅ Server cleanup complete.\n");
 }
 
 /**
@@ -183,7 +196,7 @@ void Server::acceptNew()
         p.events = POLLIN;
         p.revents = 0;
         pfds.push_back(p); /*inset new client into pdfs*/
-        std::fprintf(stderr, "New client (fd=%d, total=%zu)\n", cfd, clients.size());
+        std::fprintf(stderr, "🟢 New client (fd=%d, total=%zu)\n", cfd, clients.size());
     }
 }
 
@@ -265,14 +278,14 @@ void Server::disconnect(size_t idx)
 
         // Mostrar en consola quién se desconecta (MODIFICADO)
         if (!c.nick.empty())
-            std::fprintf(stderr, "Client disconnected: %s (fd=%d, total=%zu)\n",
+            std::fprintf(stderr, "🔴 Client disconnected: %s (fd=%d, total=%zu)\n",
                          c.nick.c_str(), fd, clients.size() - 1);
         else
-            std::fprintf(stderr, "Client disconnected: fd=%d (total=%zu)\n",
+            std::fprintf(stderr, "🔴 Client disconnected: fd=%d (total=%zu)\n",
                          fd, clients.size() - 1);
 
         if (!c.channels.empty()) /*NOT is the .end & NOT is .empty*/
-            quitCleanup(c, "Connection closed");
+            quitCleanup(c, "🔒 Connection closed");
     }
 
     ::close(fd);

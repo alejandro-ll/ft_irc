@@ -56,4 +56,5 @@ private:
     int findFdByNick(const std::string &nick) const;
     void broadcastToChannel(const Channel &ch, int fromFd, const std::string &msg);
     void quitCleanup(Client &c, const std::string &reason);
+    void closeAllSockets();
 };
