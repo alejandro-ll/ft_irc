@@ -23,7 +23,7 @@ Server::Server(unsigned short port, const std::string &pwd)
     p.fd = listen_fd;
     p.events = POLLIN; /* listening socket for incoming connections */
     p.revents = 0;     /* NO events*/
-    pfds.push_back(p);
+    pfds.push_back(p); /* fd[0] = Structure: SERVER*/
 }
 
 /**
@@ -41,7 +41,7 @@ Server::~Server()
  */
 void Server::setNonBlocking(int fd)
 {
-    int flags = fcntl(fd, F_GETFL, 0);
+    int flags = fcntl(fd, F_GETFL, 0); /*Control fd fcntl(fd, Get status flags, rellenar)*/
     if (flags < 0)
         flags = 0;
     fcntl(fd, F_SETFL, flags | O_NONBLOCK); /*Add non-blocking flag to descript*/
