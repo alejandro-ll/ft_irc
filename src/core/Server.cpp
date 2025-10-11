@@ -81,10 +81,10 @@ void Server::run()
         for (size_t i = 1; i < pfds.size(); ++i)
         {
             int fd = pfds[i].fd;
-            if (clients[fd].sendBuf.empty())             
-                pfds[i].events = POLLIN; /*monitor READ*/ 
-            else    
-                pfds[i].events = POLLIN | POLLOUT;/*monitor READ and WRITE*/
+            if (clients[fd].sendBuf.empty())
+                pfds[i].events = POLLIN; /*monitor READ*/
+            else
+                pfds[i].events = POLLIN | POLLOUT; /*monitor READ and WRITE*/
         }
 
         /* Wait for events on all file descriptors (infinite timeout) */
@@ -164,7 +164,7 @@ void Server::acceptNew()
         if (clients.size() >= MAX_CLIENTS)
         {
             std::fprintf(stderr, "⚠️  Maximum client limit reached (%zu), rejecting connection\n",
-             clients.size());
+                         clients.size());
             ::close(cfd);
             break;
         }
@@ -252,8 +252,22 @@ void Server::disconnect(size_t idx)
 
     /* Clean up channels if client was still member */
     std::map<int, Client>::iterator it = clients.find(fd);
-    if (it != clients.end() && !it->second.channels.empty()) /*NOT is the .end & NOT is .empty*/
-        quitCleanup(it->second, "Connection closed");
+    if (it != clients.end())
+    {
+        Client &c = it->second;
+
+        // Mostrar en consola quién se desconecta (MODIFICADO)
+        if (!c.nick.empty())
+            std::fprintf(stderr, "Client disconnected: %s (fd=%d, total=%zu)\n",
+                         c.nick.c_str(), fd, clients.size() - 1);
+        else
+            std::fprintf(stderr, "Client disconnected: fd=%d (total=%zu)\n",
+                         fd, clients.size() - 1);
+
+        if (!c.channels.empty()) /*NOT is the .end & NOT is .empty*/
+            quitCleanup(c, "Connection closed");
+    }
+
     ::close(fd);
     clients.erase(fd);
     pfds[idx] = pfds.back(); /* Replace target with last element (swap) */
@@ -335,10 +349,10 @@ void Server::broadcastToChannel(const Channel &ch, int fromFd, const std::string
 void Server::quitCleanup(Client &c, const std::string &reason)
 {
     std::string quitMsg;
-        if (c.nick.empty())
-            quitMsg = ":* QUIT :" + reason + "\r\n";
-        else
-            quitMsg = ":" + c.nick + " QUIT :" + reason + "\r\n";
+    if (c.nick.empty())
+        quitMsg = ":* QUIT :" + reason + "\r\n";
+    else
+        quitMsg = ":" + c.nick + " QUIT :" + reason + "\r\n";
     std::vector<std::string> chans(c.channels.begin(), c.channels.end()); /*Copy channels*/
     for (size_t i = 0; i < chans.size(); ++i)
     {
@@ -347,8 +361,8 @@ void Server::quitCleanup(Client &c, const std::string &reason)
             continue;
         Channel &ch = it->second;              /* Get channel reference*/
         broadcastToChannel(ch, c.fd, quitMsg); /* Notify all channel members */
-        ch.removeMember(c.fd); /* Removes client from channel */
-        c.channels.erase(chans[i]); /* Removes channel from client */
+        ch.removeMember(c.fd);                 /* Removes client from channel */
+        c.channels.erase(chans[i]);            /* Removes channel from client */
         if (ch.members.empty())
             channels.erase(it); /* Deletes empty channel */
         else if (ch.ops.empty())
