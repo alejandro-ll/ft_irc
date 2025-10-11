@@ -2,6 +2,30 @@
 #include <cstdlib>
 #include "Server.hpp"
 
+#include <iostream>
+
+/**
+ * @brief Prints a green ASCII art banner for the IRC server
+ */
+#include <iostream>
+
+#include <iostream>
+
+void introServer()
+{
+    const std::string green = "\033[1;32m"; // bright green
+    const std::string reset = "\033[0m";
+
+    std::cout << green << std::endl;
+    std::cout << " ██╗██████╗  ██████╗        ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗" << std::endl;
+    std::cout << " ██║██╔══██╗██╔════╝        ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗" << std::endl;
+    std::cout << " ██║██████╔╝██║             ███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝" << std::endl;
+    std::cout << " ██║██╔══██╗██║             ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗" << std::endl;
+    std::cout << " ██║██║  ██║╚██████╗        ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║" << std::endl;
+    std::cout << " ╚═╝╚═╝  ╚═╝ ╚═════╝        ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝" << std::endl;
+    std::cout << reset << std::endl;
+}
+
 /**
  * @brief Main entry point for IRC server application
  * @param argv Argument vector [program, port, password]
@@ -18,6 +42,7 @@ int main(int argc, char **argv)
     std::string password = argv[2];
     try
     {
+        introServer();
         Server srv(port, password);
         srv.run();
     }
