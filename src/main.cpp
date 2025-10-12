@@ -45,7 +45,7 @@ void introServer()
     std::cout << "       To disconnect the server, press Ctrl+C" << std::endl;
 
     std::cout << reset << std::endl;
-    std::cout << cyan << "    Connect a client using netcat (nc):  nc -C 127.0.0.1 " << reset << std::endl;
+    std::cout << cyan << "    Connect a client using netcat (nc):  nc -C 127.0.0.1 <PORT>" << reset << std::endl;
     std::cout << std::endl;
 
     std::cout << green << "    Authentication Commands" << reset << std::endl;
