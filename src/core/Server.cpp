@@ -49,6 +49,7 @@ Server::~Server()
     pfds.clear();
 
     std::cerr << "✅ Server cleanup complete." << std::endl;
+    std::cout << std::endl;
 }
 
 /**

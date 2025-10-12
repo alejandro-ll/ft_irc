@@ -19,7 +19,7 @@ void signalHandler(int signal)
     (void)signal;
     g_shutdown = 1;
     std::cout << std::endl;
-    std::cout << "🔴 Received shutdown signal. Closing server..." << std::endl;
+    std::cout << "\033[1;31m🔴 Received shutdown signal. Closing server...\033[0m" << std::endl;
 }
 
 void introServer()
