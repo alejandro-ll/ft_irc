@@ -18,9 +18,9 @@ public:
     void run();
 
     /* === Command handlers === */
-    void handleCommand(Client &c, const Cmd &cmd);
+    void handleCommand(Client &c, const Cmd &cmd, Server &srv);
     void cmdPASS(Client &c, const std::vector<std::string> &a);
-    void cmdNICK(Client &c, const std::vector<std::string> &a);
+    void cmdNICK(Client &c, const std::vector<std::string> &a, Server &srv);
     void cmdUSER(Client &c, const std::vector<std::string> &a);
     void cmdPING(Client &c, const std::vector<std::string> &a);
     void cmdQUIT(Client &c, const std::vector<std::string> &a);

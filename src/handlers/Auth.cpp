@@ -13,11 +13,6 @@ void Server::tryRegister(Client &c)
     }
 }
 
-/**
- * @brief Handles PASS command for client password authentication
- * @param c Client sending the command
- * @param a Command arguments containing password
- */
 void Server::cmdPASS(Client &c, const std::vector<std::string> &a)
 {
     if (a.empty())
@@ -31,16 +26,19 @@ void Server::cmdPASS(Client &c, const std::vector<std::string> &a)
 }
 
 /**
- * @brief Handles NICK command for setting client nickname
+ * @brief Handles PASS command for client password authentication
  * @param c Client sending the command
- * @param a Command arguments containing nickname
+ * @param a Command arguments containing password
  */
-void Server::cmdNICK(Client &c, const std::vector<std::string> &a)
+void Server::cmdNICK(Client &c, const std::vector<std::string> &a, Server &srv)
 {
     if (a.empty())
         return sendTo(c, ":server NOTICE * :NICK needs parameter\r\n");
-    /* TODO: Validate duplicates and format */
-    c.nick = a[0];
+    if (srv.findFdByNick(a[0]) != -1)
+        return sendTo(c, ":server NOTICE * :Nickname is already in use\r\n");
+
+    std::string newNick = a[0];
+    c.nick = newNick;
     tryRegister(c);
 }
 

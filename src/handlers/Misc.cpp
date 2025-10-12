@@ -29,7 +29,7 @@ void Server::cmdQUIT(Client &c, const std::vector<std::string> &a)
  * @param c Client sending the command
  * @param cmd Parsed command structure containing verb and arguments
  */
-void Server::handleCommand(Client &c, const Cmd &cmd)
+void Server::handleCommand(Client &c, const Cmd &cmd, Server &srv)
 {
     /* Handle connection maintenance commands for all clients */
     if (cmd.verb == "PING")
@@ -43,7 +43,7 @@ void Server::handleCommand(Client &c, const Cmd &cmd)
         if (cmd.verb == "PASS")
             return cmdPASS(c, cmd.args);
         if (cmd.verb == "NICK")
-            return cmdNICK(c, cmd.args);
+            return cmdNICK(c, cmd.args, srv);
         if (cmd.verb == "USER")
             return cmdUSER(c, cmd.args);
         return sendTo(c, ":server NOTICE * :Register first (PASS/NICK/USER)\r\n");

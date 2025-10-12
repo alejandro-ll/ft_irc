@@ -274,10 +274,14 @@ void Server::disconnect(size_t idx)
     if (it != clients.end())
     {
         Client &c = it->second;
-        if (!c.nick.empty())
-            std::cerr << "🔴 Client disconnected: " << c.nick << " (fd=" << fd << ", total=" << (clients.size() - 1) << ")" << std::endl;
+        if (!c.nick.empty() || !c.user.empty() || !c.realname.empty())
+            std::cerr << "🔴 Client disconnected: NICK: " << c.nick
+                      << " USER: " << c.user
+                      << " REALNAME: " << c.realname
+                      << " (fd=" << fd << ", total=" << (clients.size() - 1) << ")" << std::endl;
         else
             std::cerr << "🔴 Client disconnected: fd=" << fd << " (total=" << (clients.size() - 1) << ")" << std::endl;
+
         if (!c.channels.empty()) /*NOT is the .end & NOT is .empty*/
             quitCleanup(c, "🔒 Connection closed");
     }
@@ -320,7 +324,7 @@ void Server::markWrite(int fd)
 void Server::onLine(Client &c, const std::string &line)
 {
     Cmd cmd = parseIrcLine(line);
-    handleCommand(c, cmd);
+    handleCommand(c, cmd, *this);
 }
 
 /**
