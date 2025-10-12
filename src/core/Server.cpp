@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <csignal>
+#include <iostream>
 
 /**
  * @brief Constructs server instance and initializes listening socket
@@ -36,18 +37,18 @@ Server::~Server()
     if (listen_fd >= 0)
     {
         ::close(listen_fd);
-        std::fprintf(stderr, "🔒 Closed server socket fd=%d\n", listen_fd);
+        std::cerr << "🔒 Closed \033[1;32mserver\033[0m socket fd=" << listen_fd << std::endl;
     }
 
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
         ::close(it->first);
-        std::fprintf(stderr, "🔒 Closed client socket fd=%d\n", it->first);
+        std::cerr << "🔒 Closed client socket fd=" << it->first << std::endl;
     }
     clients.clear();
     pfds.clear();
 
-    std::fprintf(stderr, "✅ Server cleanup complete.\n");
+    std::cerr << "✅ Server cleanup complete." << std::endl;
 }
 
 /**
@@ -172,8 +173,7 @@ void Server::acceptNew()
                 break;
             if (errno == EMFILE || errno == ENFILE || errno == ENOMEM)
             {
-                std::fprintf(stderr, "⚠️  Maximum connections reached  (errno=%d: %s)\n",
-                             errno, strerror(errno));
+                std::cerr << "⚠️  Maximum connections reached  (errno=" << errno << ": " << strerror(errno) << ")" << std::endl;
                 break;
             }
             std::perror("accept");
@@ -183,8 +183,7 @@ void Server::acceptNew()
         /* Maximum client ? */
         if (clients.size() >= MAX_CLIENTS)
         {
-            std::fprintf(stderr, "⚠️  Maximum client limit reached (%zu), rejecting connection\n",
-                         clients.size());
+            std::cerr << "⚠️  Maximum client limit reached (" << clients.size() << "), rejecting connection" << std::endl;
             ::close(cfd);
             break;
         }
@@ -196,7 +195,7 @@ void Server::acceptNew()
         p.events = POLLIN;
         p.revents = 0;
         pfds.push_back(p); /*inset new client into pdfs*/
-        std::fprintf(stderr, "🟢 New client (fd=%d, total=%zu)\n", cfd, clients.size());
+        std::cerr << "🟢 New client (fd=" << cfd << ", total=" << clients.size() << ")" << std::endl;
     }
 }
 
@@ -237,7 +236,6 @@ void Server::handleRead(size_t idx)
         }
     }
 }
-
 /**
  * @brief Sends pending data from client's send buffer
  * @param idx Index of client in pollfd vector
@@ -275,19 +273,13 @@ void Server::disconnect(size_t idx)
     if (it != clients.end())
     {
         Client &c = it->second;
-
-        // Mostrar en consola quién se desconecta (MODIFICADO)
         if (!c.nick.empty())
-            std::fprintf(stderr, "🔴 Client disconnected: %s (fd=%d, total=%zu)\n",
-                         c.nick.c_str(), fd, clients.size() - 1);
+            std::cerr << "🔴 Client disconnected: " << c.nick << " (fd=" << fd << ", total=" << (clients.size() - 1) << ")" << std::endl;
         else
-            std::fprintf(stderr, "🔴 Client disconnected: fd=%d (total=%zu)\n",
-                         fd, clients.size() - 1);
-
+            std::cerr << "🔴 Client disconnected: fd=" << fd << " (total=" << (clients.size() - 1) << ")" << std::endl;
         if (!c.channels.empty()) /*NOT is the .end & NOT is .empty*/
             quitCleanup(c, "🔒 Connection closed");
     }
-
     ::close(fd);
     clients.erase(fd);
     pfds[idx] = pfds.back(); /* Replace target with last element (swap) */
