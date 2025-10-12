@@ -51,7 +51,7 @@ void introServer()
     std::cout << green << "    Authentication Commands" << reset << std::endl;
     std::cout << "    - PASS <password>  ->  Verify server password" << std::endl;
     std::cout << "    - NICK <nickname>  ->  Set your nickname" << std::endl;
-    std::cout << "    - USER <user> <mode> <unused> <realname> ->  Set user information" << std::endl;
+    std::cout << "    - USER <user> <unused> <unused> <realname> ->  Set user information" << std::endl;
 
     std::cout << green << "    Channel Commands" << reset << std::endl;
     std::cout << "    - JOIN <channel>   ->  Join a channel" << std::endl;
