@@ -6,10 +6,6 @@
 #include <cstdlib>
 #include <csignal>
 
-/**
- * @brief Prints a green ASCII art banner for the IRC server
- */
-
 // Variable global para controlar el shutdown
 volatile sig_atomic_t g_shutdown = 0;
 
@@ -25,8 +21,10 @@ void signalHandler(int signal)
 void introServer()
 {
     const std::string green = "\033[1;32m";
+    const std::string yellow = "\033[1;33m";
+    const std::string red = "\033[1;31m";
+    const std::string cyan = "\033[1;36m";
     const std::string reset = "\033[0m";
-    const std::string red = "\033[1;31m"; // rojo negrita
 
     std::cout << green << std::endl;
 
@@ -47,27 +45,36 @@ void introServer()
     std::cout << "       To disconnect the server, press Ctrl+C" << std::endl;
 
     std::cout << reset << std::endl;
-    std::cout << green << "    Connect a client using netcat (nc):  nc -C 127.0.0.1 6667" << reset << std::endl;
+    std::cout << cyan << "    Connect a client using netcat (nc):  nc -C 127.0.0.1 " << reset << std::endl;
     std::cout << std::endl;
+
     std::cout << green << "    Authentication Commands" << reset << std::endl;
-    std::cout << "    - PASS: Verify server password" << std::endl;
-    std::cout << "    - NICK: Set your nickname" << std::endl;
-    std::cout << "    - USER: Set user information" << std::endl;
+    std::cout << "    - PASS <password>  : Verify server password" << std::endl;
+    std::cout << "    - NICK <nickname>  : Set your nickname" << std::endl;
+    std::cout << "    - USER <user> <mode> <unused> <realname> : Set user information" << std::endl;
 
     std::cout << green << "    Channel Commands" << reset << std::endl;
-    std::cout << "    - JOIN: Join a channel" << std::endl;
-    std::cout << "    - PART: Leave a channel" << std::endl;
-    std::cout << "    - TOPIC: Manage channel topic" << std::endl;
+    std::cout << "    - JOIN <channel>   : Join a channel" << std::endl;
+    std::cout << "    - PART <channel>   : Leave a channel" << std::endl;
+    std::cout << "    - TOPIC <channel> [topic] : Manage channel topic" << std::endl;
 
     std::cout << green << "    Operator Commands" << reset << std::endl;
-    std::cout << "    - MODE: Set channel/user modes" << std::endl;
-    std::cout << "    - KICK: Kick users from channels" << std::endl;
-    std::cout << "    - INVITE: Invite users to channels" << std::endl;
+    std::cout << "    - MODE <channel> <modes> [params] : Set channel modes" << std::endl;
+    std::cout << "    - KICK <channel> <user> [reason] : Kick users from channels" << std::endl;
+    std::cout << "    - INVITE <user> <channel> : Invite users to channels" << std::endl;
+
+    std::cout << yellow << "    Channel Modes (MODE command)" << reset << std::endl;
+    std::cout << "    - +i / -i : Set/remove Invite-only channel" << std::endl;
+    std::cout << "    - +t / -t : Restrict TOPIC command to channel operators" << std::endl;
+    std::cout << "    - +k / -k <key> : Set/remove channel password" << std::endl;
+    std::cout << "    - +o / -o <user> : Give/take channel operator privilege" << std::endl;
+    std::cout << "    - +l / -l <limit> : Set/remove user limit" << std::endl;
 
     std::cout << green << "    Communication Commands" << reset << std::endl;
-    std::cout << "    - PRIVMSG: Send private or channel messages" << std::endl;
-    std::cout << "    - PING: Connectivity check" << std::endl;
-    std::cout << "    - QUIT: Disconnect from server" << std::endl;
+    std::cout << "    - PRIVMSG <target> <message> : Send private or channel messages" << std::endl;
+    std::cout << "    - NOTICE <target> <message>  : Send notice messages" << std::endl;
+    std::cout << "    - PING <server>    : Connectivity check" << std::endl;
+    std::cout << "    - QUIT [message]   : Disconnect from server" << std::endl;
     std::cout << std::endl;
 }
 
