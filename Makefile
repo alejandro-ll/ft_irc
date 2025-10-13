@@ -1,5 +1,5 @@
 NAME := ircserv
-CXX  := c++
+CXX := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++98 -g
 INC := -Iinclude
 
@@ -18,9 +18,11 @@ SRC := \
 
 OBJ := $(SRC:.cpp=.o)
 
+# Build executable
 $(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 
+# Compile .cpp to .o
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
@@ -34,7 +36,7 @@ fclean: clean
 
 re: fclean all
 
-# Valgrind Rule
+# Valgrind RULE
 val: $(NAME)
 	valgrind --leak-check=full \
 	         --show-leak-kinds=definite,indirect,possible \
