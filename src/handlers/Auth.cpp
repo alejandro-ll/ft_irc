@@ -24,9 +24,14 @@ void Server::cmdPASS(Client &c, const std::vector<std::string> &a)
         return sendTo(c, ":server NOTICE * :PASS needs parameter\r\n");
     if (c.registered)
         return;
-    c.passOk = (a[0] == password);
-    if (!c.passOk)
+
+    if (a[0] == password)
+        c.passOk = true;
+    else
+    {
+        c.passOk = false;
         sendTo(c, ":server NOTICE * :Bad password\r\n");
+    }
     tryRegister(c);
 }
 
