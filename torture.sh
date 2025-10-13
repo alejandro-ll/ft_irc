@@ -389,7 +389,7 @@ touch /tmp/rejected_count_$$
 
 echo ""
 echo "📈 Fase 1: 80 conexiones base rápidas..."
-for i in {1..80}; do
+for i in {1..150}; do
     commands=$(cat <<CMD
 PASS $PASSWORD
 NICK stress$i
