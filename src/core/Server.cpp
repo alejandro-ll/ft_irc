@@ -37,7 +37,7 @@ Server::~Server()
     if (listen_fd >= 0)
     {
         ::close(listen_fd);
-        std::cerr << "🔒 Closed \033[1;32mserver\033[0m socket fd=" << listen_fd << std::endl;
+        std::cerr << "🔒 Closed \033[1;32mSERVER\033[0m socket fd=" << listen_fd << std::endl;
     }
 
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
@@ -47,8 +47,8 @@ Server::~Server()
     }
     clients.clear();
     pfds.clear();
-
-    std::cerr << "✅ Server cleanup complete." << std::endl;
+    std::cout << std::endl;
+    std::cerr << "   \033[1;32mServer cleanup complete.\033[0m" << std::endl;
     std::cout << std::endl;
 }
 

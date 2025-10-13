@@ -66,5 +66,8 @@ void Server::handleCommand(Client &c, const Cmd &cmd, Server &srv)
         return cmdKICK(c, cmd.args);
 
     /* Unknown command response */
-    sendTo(c, ":server NOTICE " + (c.nick.empty() ? "*" : c.nick) + " :Unknown command\r\n");
+    if (c.nick.empty())
+        sendTo(c, ":server NOTICE * :Unknown command\r\n");
+    else
+        sendTo(c, ":server NOTICE " + c.nick + " :Unknown command\r\n");
 }
