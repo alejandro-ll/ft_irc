@@ -13,6 +13,11 @@ void Server::tryRegister(Client &c)
     }
 }
 
+/**
+ * @brief Handles the PASS command to validate client password
+ * @param c Client issuing the PASS command
+ * @param a Arguments passed with the PASS command
+ */
 void Server::cmdPASS(Client &c, const std::vector<std::string> &a)
 {
     if (a.empty())
