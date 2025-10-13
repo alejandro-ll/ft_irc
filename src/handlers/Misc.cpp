@@ -7,7 +7,11 @@
  */
 void Server::cmdPING(Client &c, const std::vector<std::string> &a)
 {
-    std::string token = a.empty() ? "" : a.back();
+    std::string token;
+    if (a.empty())
+        token = "";
+    else
+        token = a.back();
     sendTo(c, ":server PONG :" + token + "\r\n");
 }
 
@@ -18,9 +22,13 @@ void Server::cmdPING(Client &c, const std::vector<std::string> &a)
  */
 void Server::cmdQUIT(Client &c, const std::vector<std::string> &a)
 {
-    const std::string reason = a.empty() ? "Client Quit" : a.back();
+    std::string reason;
+    if (a.empty())
+        reason = "Client Quit";
+    else
+        reason = a.back();
     quitCleanup(c, reason);
-    /* Mark client for graceful disconnect after sending pending data */
+    // Mark client for graceful disconnect after sending pending data
     c.closing = true;
 }
 
