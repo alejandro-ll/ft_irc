@@ -52,16 +52,25 @@ Server::~Server()
     std::cout << std::endl;
 }
 
+/*
+ * @brief Sets file descriptor to non-blocking mode
+ * @param fd File descriptor to modify
+
+void Server::setNonBlocking(int fd)
+{
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags < 0)
+        flags = 0;
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}*/
+
 /**
  * @brief Sets file descriptor to non-blocking mode
  * @param fd File descriptor to modify
  */
 void Server::setNonBlocking(int fd)
 {
-    int flags = fcntl(fd, F_GETFL, 0); /*Control fd fcntl(fd, Get status flags, rellenar)*/
-    if (flags < 0)
-        flags = 0;
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK); /*Add non-blocking flag to descript*/
+    fcntl(fd, F_SETFL, O_NONBLOCK); /*Add non-blocking flag to descript*/
 }
 
 /**
