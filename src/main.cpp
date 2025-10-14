@@ -38,12 +38,12 @@ void introServer()
     std::cout << "  ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗" << std::endl;
     std::cout << "  ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║" << std::endl;
     std::cout << "  ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝" << std::endl;
-    std::cout << red << bold;
     std::cout << "\n     ╔════════════════════════════════════╗\n";
-    std::cout << "     ║     IRC COMMANDS   From HexChat    ║\n";
+    std::cout << "     ║    IRC Commands Used in HexChat    ║\n";
     std::cout << "     ╠════════════════════════════════════╣\n"
               << reset;
-    std::cout << "     ║ Ctrl+C → Disconnect server         ║\n";
+    std::cout << "     ║   Ctrl+C → Disconnect server       ║\n";
+    std::cout << "     ║                                    ║\n";
     std::cout << "     ║ " << green << "AUTHENTICATION" << reset << "                     ║\n";
     std::cout << "     ║   /PASS <password>                 ║\n";
     std::cout << "     ║   /NICK <nickname>                 ║\n";
