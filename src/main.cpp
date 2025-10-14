@@ -38,36 +38,36 @@ void introServer()
     std::cout << "  ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗" << std::endl;
     std::cout << "  ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║" << std::endl;
     std::cout << "  ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝" << std::endl;
-    std::cout << "\n     ╔════════════════════════════════════╗\n";
-    std::cout << "     ║    IRC Commands Used in HexChat    ║\n";
-    std::cout << "     ╠════════════════════════════════════╣\n"
+    std::cout << "\n      ╔════════════════════════════════════╗\n";
+    std::cout << "      ║    IRC Commands Used in HexChat    ║\n";
+    std::cout << "      ╠════════════════════════════════════╣\n"
               << reset;
-    std::cout << "     ║   Ctrl+C → Disconnect server       ║\n";
-    std::cout << "     ║                                    ║\n";
-    std::cout << "     ║ " << green << "AUTHENTICATION" << reset << "                     ║\n";
-    std::cout << "     ║   /PASS <password>                 ║\n";
-    std::cout << "     ║   /NICK <nickname>                 ║\n";
-    std::cout << "     ║   /USER <user> <0> <0> <name>      ║\n";
-    std::cout << "     ║ " << green << "CHANNELS" << reset << "                           ║\n";
-    std::cout << "     ║   /JOIN <channel> [:key]           ║\n";
-    std::cout << "     ║   /PART <channel>                  ║\n";
-    std::cout << "     ║   /TOPIC <channel> [:topic]        ║\n";
-    std::cout << "     ║ " << green << "OPERATORS" << reset << "                          ║\n";
-    std::cout << "     ║   /KICK <channel> <user>           ║\n";
-    std::cout << "     ║   /INVITE <user> <channel>         ║\n";
-    std::cout << "     ║   /MODE <channel> <mode>           ║\n";
-    std::cout << "     ║ " << yellow << "CHANNEL MODES" << reset << "                      ║\n";
-    std::cout << "     ║   +i/-i → Invite-only              ║\n";
-    std::cout << "     ║   +t/-t → Topic restriction        ║\n";
-    std::cout << "     ║   +k/-k <key> → Password           ║\n";
-    std::cout << "     ║   +o/-o <user> → Operator          ║\n";
-    std::cout << "     ║   +l/-l <limit> → User limit       ║\n";
-    std::cout << "     ║ " << green << "MESSAGING" << reset << "                          ║\n";
-    std::cout << "     ║   /PRIVMSG <target> <msg>          ║\n";
-    std::cout << "     ║   /QUIT [:message]                 ║\n";
-    std::cout << "     ║ " << cyan << "NETCAT" << reset << "                             ║\n";
-    std::cout << "     ║   nc -C 127.0.0.1 <PORT>           ║\n";
-    std::cout << "     ╚════════════════════════════════════╝\n"
+    std::cout << "      ║   Ctrl+C → Disconnect server       ║\n";
+    std::cout << "      ║                                    ║\n";
+    std::cout << "      ║ " << green << "AUTHENTICATION" << reset << "                     ║\n";
+    std::cout << "      ║   /PASS <password>                 ║\n";
+    std::cout << "      ║   /NICK <nickname>                 ║\n";
+    std::cout << "      ║   /USER <user> <0> <0> <name>      ║\n";
+    std::cout << "      ║ " << green << "CHANNELS" << reset << "                           ║\n";
+    std::cout << "      ║   /JOIN <channel> [:key]           ║\n";
+    std::cout << "      ║   /PART <channel>                  ║\n";
+    std::cout << "      ║   /TOPIC <channel> [:topic]        ║\n";
+    std::cout << "      ║ " << green << "OPERATORS" << reset << "                          ║\n";
+    std::cout << "      ║   /KICK <channel> <user>           ║\n";
+    std::cout << "      ║   /INVITE <user> <channel>         ║\n";
+    std::cout << "      ║   /MODE <channel> <mode>           ║\n";
+    std::cout << "      ║ " << yellow << "CHANNEL MODES" << reset << "                      ║\n";
+    std::cout << "      ║   +i/-i → Invite-only              ║\n";
+    std::cout << "      ║   +t/-t → Topic restriction        ║\n";
+    std::cout << "      ║   +k/-k <key> → Password           ║\n";
+    std::cout << "      ║   +o/-o <user> → Operator          ║\n";
+    std::cout << "      ║   +l/-l <limit> → User limit       ║\n";
+    std::cout << "      ║ " << green << "MESSAGING" << reset << "                          ║\n";
+    std::cout << "      ║   /PRIVMSG <target> <msg>          ║\n";
+    std::cout << "      ║   /QUIT [:message]                 ║\n";
+    std::cout << "      ║ " << cyan << "NETCAT" << reset << "                             ║\n";
+    std::cout << "      ║   nc -C 127.0.0.1 <PORT>           ║\n";
+    std::cout << "      ╚════════════════════════════════════╝\n"
               << reset;
 }
 
