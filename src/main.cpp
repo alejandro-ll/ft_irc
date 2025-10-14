@@ -48,9 +48,9 @@ void introServer()
     std::cout << "    - /NICK <nickname>  ->  Set your nickname" << std::endl;
     std::cout << "    - /USER <user> <unused> <unused> <realname> ->  Set user information" << std::endl;
     std::cout << green << "    Channel Commands" << reset << std::endl;
-    std::cout << "    - /JOIN <channel>   ->  Join a channel" << std::endl;
-    std::cout << "    - /PART <channel>   ->  Leave a channel" << std::endl;
-    std::cout << "    - /TOPIC <channel> : [topic] ->  Manage channel topic" << std::endl;
+    std::cout << "    - /JOIN <channel> : [password]  ->  Join a channel" << std::endl;
+    std::cout << "    - /PART <channel>               ->  Leave a channel" << std::endl;
+    std::cout << "    - /TOPIC <channel> : [topic]    ->  Manage channel topic" << std::endl;
     std::cout << green << "    Operator Commands" << reset << std::endl;
     std::cout << "    - /KICK <channel> <user> : [reason] -> Kick users from channels" << std::endl;
     std::cout << "    - /INVITE <user> <channel> ->  Invite users to channels" << std::endl;
