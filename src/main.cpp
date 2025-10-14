@@ -22,6 +22,7 @@ void introServer()
     const std::string red = "\033[1;31m";
     const std::string cyan = "\033[1;36m";
     const std::string reset = "\033[0m";
+    const std::string bold = "\033[1m";
 
     std::cout << green << std::endl;
     std::cout << "               ██╗██████╗  ██████╗" << std::endl;
@@ -37,39 +38,37 @@ void introServer()
     std::cout << "  ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗" << std::endl;
     std::cout << "  ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║" << std::endl;
     std::cout << "  ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝" << std::endl;
-    std::cout << red << std::endl;
-    std::cout << "       To disconnect the server, press Ctrl+C" << std::endl;
-    std::cout << reset << std::endl;
-    std::cout << "       COMMANDS To connect the server, fom HEXCHAT:" << std::endl;
-
-    std::cout << std::endl;
-    std::cout << green << "    Authentication Commands (auto setup inside HexCat)" << reset << std::endl;
-    std::cout << "    - /PASS <password>  ->  Verify server password" << std::endl;
-    std::cout << "    - /NICK <nickname>  ->  Set your nickname" << std::endl;
-    std::cout << "    - /USER <user> <unused> <unused> <realname> ->  Set user information" << std::endl;
-    std::cout << green << "    Channel Commands" << reset << std::endl;
-    std::cout << "    - /JOIN <channel> : [password]  ->  Join a channel" << std::endl;
-    std::cout << "    - /PART <channel>               ->  Leave a channel" << std::endl;
-    std::cout << "    - /TOPIC <channel> : [topic]    ->  Manage channel topic" << std::endl;
-    std::cout << green << "    Operator Commands" << reset << std::endl;
-    std::cout << "    - /KICK <channel> <user> : [reason] -> Kick users from channels" << std::endl;
-    std::cout << "    - /INVITE <user> <channel> ->  Invite users to channels" << std::endl;
-    std::cout << "    - /MODE <channel> <modes> [params] -> Set channel modes" << std::endl;
-    std::cout << yellow << "            Channel Modes (MODE command)" << reset << std::endl;
-    std::cout << "            - +i / -i : Set/remove Invite-only channel" << std::endl;
-    std::cout << "            - +t / -t : Restrict TOPIC command to channel operators" << std::endl;
-    std::cout << "            - +k / -k <key> : Set/remove channel password" << std::endl;
-    std::cout << "            - +o / -o <user> : Give/take channel operator privilege" << std::endl;
-    std::cout << "            - +l / -l <limit> : Set/remove user limit" << std::endl;
-    std::cout << green << "    Communication Commands" << reset << std::endl;
-    std::cout << "    - /PRIVMSG <target> : <message> ->  Send private or channel messages" << std::endl;
-    std::cout << "    - /NOTICE <target> : <message>  ->  Send notice messages" << std::endl;
-    std::cout << "    - /PING <server>    ->  Connectivity check" << std::endl;
-    std::cout << "    - /QUIT : [message]   ->  Disconnect from server" << std::endl;
-    std::cout << std::endl;
-    std::cout << cyan << "    NOTE: To connect a client using netcat (nc):  nc -C 127.0.0.1 <PORT>" << reset << std::endl;
-    std::cout << cyan << "    Commands for (nc) do not require the slash /" << reset << std::endl;
-    std::cout << std::endl;
+    std::cout << red << bold;
+    std::cout << "\n     ╔════════════════════════════════════╗\n";
+    std::cout << "     ║     IRC COMMANDS   From HexChat    ║\n";
+    std::cout << "     ╠════════════════════════════════════╣\n"
+              << reset;
+    std::cout << "     ║ Ctrl+C → Disconnect server         ║\n";
+    std::cout << "     ║ " << green << "AUTHENTICATION" << reset << "                     ║\n";
+    std::cout << "     ║   /PASS <password>                 ║\n";
+    std::cout << "     ║   /NICK <nickname>                 ║\n";
+    std::cout << "     ║   /USER <user> <0> <0> <name>      ║\n";
+    std::cout << "     ║ " << green << "CHANNELS" << reset << "                           ║\n";
+    std::cout << "     ║   /JOIN <channel> [:key]           ║\n";
+    std::cout << "     ║   /PART <channel>                  ║\n";
+    std::cout << "     ║   /TOPIC <channel> [:topic]        ║\n";
+    std::cout << "     ║ " << green << "OPERATORS" << reset << "                          ║\n";
+    std::cout << "     ║   /KICK <channel> <user>           ║\n";
+    std::cout << "     ║   /INVITE <user> <channel>         ║\n";
+    std::cout << "     ║   /MODE <channel> <mode>           ║\n";
+    std::cout << "     ║ " << yellow << "CHANNEL MODES" << reset << "                      ║\n";
+    std::cout << "     ║   +i/-i → Invite-only              ║\n";
+    std::cout << "     ║   +t/-t → Topic restriction        ║\n";
+    std::cout << "     ║   +k/-k <key> → Password           ║\n";
+    std::cout << "     ║   +o/-o <user> → Operator          ║\n";
+    std::cout << "     ║   +l/-l <limit> → User limit       ║\n";
+    std::cout << "     ║ " << green << "MESSAGING" << reset << "                          ║\n";
+    std::cout << "     ║   /PRIVMSG <target> <msg>          ║\n";
+    std::cout << "     ║   /QUIT [:message]                 ║\n";
+    std::cout << "     ║ " << cyan << "NETCAT" << reset << "                             ║\n";
+    std::cout << "     ║   nc -C 127.0.0.1 <PORT>           ║\n";
+    std::cout << "     ╚════════════════════════════════════╝\n"
+              << reset;
 }
 
 /**
