@@ -370,7 +370,7 @@ void Server::quitCleanup(Client &c, const std::string &reason)
         quitMsg = ":* QUIT :" + reason + "\r\n";
     else
         quitMsg = ":" + c.nick + " QUIT :" + reason + "\r\n";
-    std::vector<std::string> chans(c.channels.begin(), c.channels.end()); /*Copy channels*/
+    std::vector<std::string> chans(c.channels.begin(), c.channels.end()); /*Copy name-channels [c.channels]*/
     for (size_t i = 0; i < chans.size(); ++i)
     {
         std::map<std::string, Channel>::iterator it = channels.find(chans[i]); /* Find channel in server */
