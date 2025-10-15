@@ -58,3 +58,5 @@ private:
     void quitCleanup(Client &c, const std::string &reason);
     void closeAllSockets();
 };
+
+void introServer();

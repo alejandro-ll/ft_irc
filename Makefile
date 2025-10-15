@@ -8,6 +8,7 @@ SRC := \
 	src/core/Server.cpp \
 	src/core/Client.cpp \
 	src/core/Channel.cpp \
+	src/core/Intro.cpp \
 	src/handlers/Auth.cpp \
 	src/handlers/Misc.cpp \
 	src/handlers/ChannelJoin.cpp \
