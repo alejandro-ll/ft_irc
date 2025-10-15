@@ -52,25 +52,13 @@ Server::~Server()
     std::cout << std::endl;
 }
 
-/*
- * @brief Sets file descriptor to non-blocking mode
- * @param fd File descriptor to modify
-
-void Server::setNonBlocking(int fd)
-{
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags < 0)
-        flags = 0;
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}*/
-
 /**
  * @brief Sets file descriptor to non-blocking mode
  * @param fd File descriptor to modify
  */
 void Server::setNonBlocking(int fd)
 {
-    fcntl(fd, F_SETFL, O_NONBLOCK); /*Add non-blocking flag to descript*/
+    fcntl(fd, F_SETFL, O_NONBLOCK);
 }
 
 /**
@@ -294,7 +282,7 @@ void Server::disconnect(size_t idx)
         if (!c.channels.empty()) /*NOT is the .end & NOT is .empty*/
             quitCleanup(c, "🔒 Connection closed");
     }
-    ::close(fd);
+    ::close(fd); /* 🔒 */
     clients.erase(fd);
     pfds[idx] = pfds.back(); /* Replace target with last element (swap) */
     pfds.pop_back();         /* Remove last element (now duplicated) */
