@@ -68,7 +68,7 @@ void introServer()
     std::cout << "      ║   /QUIT [:message]                  ║\n";
     std::cout << "      ║ " << cyan << "NETCAT" << reset << "                              ║\n";
     std::cout << "      ║   nc -C 127.0.0.1 <PORT>            ║\n";
-    std::cout << "      ║   * For 'nc' do not use /           ║\n";
+    std::cout << "      ║   For 'nc' do not use the '/' prefix║\n";
     std::cout << "      ╚═════════════════════════════════════╝\n"
               << reset;
 }
