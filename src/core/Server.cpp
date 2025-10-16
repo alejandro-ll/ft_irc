@@ -157,9 +157,6 @@ void Server::run()
 /**
  * @brief Accepts new client connections and adds to poll set
  */
-/**
- * @brief Accepts new client connections and adds to poll set
- */
 void Server::acceptNew()
 {
     for (;;)
