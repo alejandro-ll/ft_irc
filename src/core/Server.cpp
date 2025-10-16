@@ -252,7 +252,7 @@ void Server::handleWrite(size_t idx)
             return;
         }
     }
-    pfds[idx].events = pfds[idx].events & ~POLLOUT; // Clears (only) the POLLOUT bit to stop monitoring write readiness
+    pfds[idx].events = pfds[idx].events & ~POLLOUT; /* Clears (only) the POLLOUT bit to stop monitoring write readiness*/
 }
 
 /**
